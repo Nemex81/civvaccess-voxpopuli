@@ -125,6 +125,17 @@ if ($LuaExe -and (Test-Path -LiteralPath $LuaExe) -and (Test-Path -LiteralPath $
     Skip "Lua 5.1 syntax check (no interpreter found; pass -LuaExe <path> to enable)"
 }
 
+# --- deploy.ps1: presence + -ModsDir parameter --------------------------
+$deployScript = Join-Path $PSScriptRoot "deploy.ps1"
+if (Test-Path -LiteralPath $deployScript) {
+    $deployContent = Get-Content -LiteralPath $deployScript -Raw
+    Pass "tools/deploy.ps1 exists"
+    if ($deployContent -match 'string.*ModsDir') { Pass "deploy.ps1 declares -ModsDir parameter" }
+    else { Fail "deploy.ps1 does not declare -ModsDir parameter" }
+} else {
+    Fail "tools/deploy.ps1 not found (run DEPLOY-1 task to create it)"
+}
+
 # --- In-game checks this script cannot perform ---------------------------
 Manual "boot speech fires on LoadScreenClose (Lua.log probe, LoggingEnabled=1)"
 Manual "accessible cursor initialises; map keys respond (incl. PageUp/PageDown scanner)"

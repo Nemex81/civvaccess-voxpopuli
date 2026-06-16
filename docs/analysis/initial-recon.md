@@ -158,6 +158,11 @@ but the files actually live under `docs/design/`. Minor doc-link drift.
 
 ## Open questions / items requiring in-game validation
 
+> **DEPLOY-1 resolved.** `tools/deploy.ps1` was created with idempotent copy,
+> MD5 post-copy verification, rollback, and `-ModsDir` override. Static checks
+> pass (validator confirms deploy.ps1 exists and declares `-ModsDir`).
+> In-game validation items below remain open until the maintainer runs the game.
+
 - **Cross-source include resolution.** `include("CivVAccess_Boot")` must
   resolve from CVA's DLC VFS while called from a mod-imported WorldView.lua.
   This is expected (the in-game VFS indexes by bare stem across DLC + mods),

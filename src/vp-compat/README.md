@@ -77,9 +77,34 @@ powershell -ExecutionPolicy Bypass -File tools/validate-vp-compat.ps1
 dependencies, Lua syntax) are proven by the script. `[MANUAL]` items can only
 be confirmed in-game and are listed by the script, never auto-passed.
 
+## Deploy
+
+Installs the mod into your Civ V MODS directory:
+
+```powershell
+# Standard install (resolves My Documents automatically)
+powershell -ExecutionPolicy Bypass -File tools/deploy.ps1
+
+# Custom MODS path (e.g. non-standard install or testing)
+powershell -ExecutionPolicy Bypass -File tools/deploy.ps1 -ModsDir "D:\Civ5\MODS"
+```
+
+The script:
+
+- Copies `CivVAccess_VoxPopuli.modinfo` and `UI\InGame\WorldView.lua` into
+  `<MODS>\civvaccess-voxpopuli\`.
+- Derives the MODS path from `My Documents` (no hardcoded user name).
+- Verifies MD5 of every deployed file against the source after copy.
+- Rolls back to the previous state on any error.
+- Is idempotent: re-running with unchanged sources logs `[Unchanged]` and exits 0.
+- Logs progress to stderr in `[DEPLOY][LEVEL]` format; the summary goes to stdout.
+
+Prerequisites before running the deploy:
+
+- The [Civ-V-Access](https://github.com/rashadnaqeeb/Civ-V-Access) DLC must be
+  installed separately (it is not deployed by this script).
+- Community Patch and Vox Populi (no-EUI) must be installed and active in Civ V.
+
 ## Deployment status
 
-There is **no deploy script yet**. Installing into a real game requires copying
-this folder into the Civ V `MODS` directory (and enabling it after Community
-Patch and Vox Populi). Tracked in
-[docs/backlog/deployment.md](../../docs/backlog/deployment.md).
+Deploy script exists: `tools/deploy.ps1`. DEPLOY-1 closed.
