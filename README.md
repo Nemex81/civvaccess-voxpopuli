@@ -10,13 +10,13 @@
 
 **EN**
 - Civilization V: Brave New World
-- [Civ-V-Access](https://github.com/rashadnaqeeb/Civ-V-Access) installed and active
-- Vox Populi (Community Patch Project) no-EUI installed and active
+- [Civ-V-Access](https://github.com/rashadnaqeeb/Civ-V-Access) — installed and active
+- [Vox Populi (Community Patch Project)](https://github.com/CIVITAS-John/vox-populi) — no-EUI variant, installed and active
 
 **IT**
 - Civilization V: Brave New World
-- [Civ-V-Access](https://github.com/rashadnaqeeb/Civ-V-Access) installato e attivo
-- Vox Populi (Community Patch Project) no-EUI installato e attivo
+- [Civ-V-Access](https://github.com/rashadnaqeeb/Civ-V-Access) — installato e attivo
+- [Vox Populi (Community Patch Project)](https://github.com/CIVITAS-John/vox-populi) — variante no-EUI, installato e attivo
 
 ---
 
@@ -45,6 +45,16 @@ See: [`docs/milestone2-vp-screens.md`](docs/milestone2-vp-screens.md)
 **EN** This mod is a standalone compatibility layer. It does **not** modify Civ-V-Access or Vox Populi files. It follows the same pattern as VP's `(3a) VP - EUI Compatibility Files`.
 
 **IT** Questa mod è un layer di compatibilità autonomo. Non modifica i file di Civ-V-Access né quelli di Vox Populi. Segue lo stesso pattern di `(3a) VP - EUI Compatibility Files` di VP.
+
+---
+
+## External References / Riferimenti Esterni
+
+- **Civ-V-Access** (base accessibility mod / mod di accessibilità base)
+  https://github.com/rashadnaqeeb/Civ-V-Access
+
+- **Vox Populi (Community Patch Project)**
+  https://github.com/CIVITAS-John/vox-populi
 
 ---
 
