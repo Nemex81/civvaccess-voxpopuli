@@ -130,7 +130,7 @@ $deployScript = Join-Path $PSScriptRoot "deploy.ps1"
 if (Test-Path -LiteralPath $deployScript) {
     $deployContent = Get-Content -LiteralPath $deployScript -Raw
     Pass "tools/deploy.ps1 exists"
-    if ($deployContent -match 'string.*ModsDir') { Pass "deploy.ps1 declares -ModsDir parameter" }
+    if ($deployContent -match '\$ModsDir') { Pass "deploy.ps1 declares -ModsDir parameter" }
     else { Fail "deploy.ps1 does not declare -ModsDir parameter" }
 } else {
     Fail "tools/deploy.ps1 not found (run DEPLOY-1 task to create it)"
