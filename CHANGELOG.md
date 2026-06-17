@@ -21,6 +21,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `src/vp-compat/UI/FrontEnd/GameSetupScreen.lua`: VP v17 no-EUI verbatim copy
   with appended include bridge; overrides VP's VFS entry so the accessibility
   wrapper loads. (VP-SETUP-ACCESS-1)
+- `test.ps1`: static test suite (14 checks: sentinel, BaseMenu.install call,
+  hard guard, onShow locale, TickPump deferred, priorShowHide/priorInput,
+  bridge include, 4 deploy files, 2 validator references, full AUTO suite via
+  validate-vp-compat.ps1 delegation).
 
 ### Changed
 
