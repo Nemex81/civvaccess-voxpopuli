@@ -192,6 +192,18 @@ if (-not $wrapperNode) {
         } else {
             Fail "CivVAccess_VP_GameSetupAccess.lua missing VPSetupAccess_Installed sentinel"
         }
+
+        # The same GameSetupScreen stem backs two front-end Contexts:
+        # GameSetupScreen (Main Menu -> Single Player) and ModdingGameSetupScreen
+        # (Mods -> Next -> Single Player -> Play Map, declared as a LuaContext in
+        # ModsSinglePlayer.xml). With VP active the modding path is the only one
+        # reachable, so the wrapper must install in BOTH Contexts: it must not
+        # gate on the Context id or the base file's bIsModding flag.
+        if (($wContent -match 'bIsModding') -or ($wContent -match 'ContextPtr:GetID\(\)')) {
+            Fail "wrapper gates on Context id / bIsModding (would skip the modding setup Context)"
+        } else {
+            Pass "wrapper installs context-agnostically (covers GameSetupScreen + ModdingGameSetupScreen)"
+        }
     }
 }
 
@@ -214,6 +226,9 @@ Manual "[VP-SETUP-ACCESS-1] Back button reachable and announced via keyboard"
 Manual "[VP-SETUP-ACCESS-1] no regression: screen usable for sighted players"
 Manual "[VP-SETUP-ACCESS-1] all strings spoken in active language (it_IT/en_US)"
 Manual "[VP-SETUP-ACCESS-1] Advanced button opens advanced setup popup via keyboard"
+Manual "[VP-SETUP-ACCESS-1][MODDING] Mods -> Next -> Single Player screen is keyboard-navigable and spoken"
+Manual "[VP-SETUP-ACCESS-1][MODDING] Play Map opens the setup screen (ModdingGameSetupScreen) and it speaks"
+Manual "[VP-SETUP-ACCESS-1][MODDING] setup reached via Mods navigates/announces like the Main Menu path"
 Manual "[OUT-OF-SCOPE-M2] Advanced popup not yet vocalized - tracked as VP-ADVANCEDSETUP-1; expected behavior: popup opens for sighted players, no speech"
 
 Write-Host ""

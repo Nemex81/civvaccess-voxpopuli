@@ -40,6 +40,26 @@ See: [`docs/milestone2-vp-screens.md`](docs/milestone2-vp-screens.md)
 
 ---
 
+## Supported Screens / Schermate supportate
+
+**EN**
+
+- Main map: Milestone 1 boot and keyboard layer are statically validated; in-game checks remain tracked by `tools/validate-vp-compat.ps1`.
+- Vox Populi no-EUI new-game setup (`GameSetupScreen`, shown as “Set up game” / “Imposta partita”): a same-Context bridge loads `CivVAccess_VP_GameSetupAccess.lua` and exposes a spoken keyboard menu for civilization, custom-name edit/remove, map type, scenario checkbox, map size, difficulty, game speed, randomize, advanced, back, and start.
+- The setup wrapper hard-guards on the Civ-V-Access front-end chain (`BaseMenu`, `BaseMenuItems`, `SpeechPipeline`, `Log`). If that chain is unavailable, it exits before installing handlers so sighted players keep the original VP screen.
+
+Known limit: the Advanced Setup popup opened by the Advanced button is not yet vocalized by this compatibility layer. It should still open for sighted players; accessibility work is tracked as `VP-ADVANCEDSETUP-1`.
+
+**IT**
+
+- Mappa principale: il boot e il layer tastiera del Milestone 1 sono validati staticamente; i controlli in-game restano tracciati da `tools/validate-vp-compat.ps1`.
+- Setup nuova partita Vox Populi no-EUI (`GameSetupScreen`, “Set up game” / “Imposta partita”): un bridge nello stesso Context carica `CivVAccess_VP_GameSetupAccess.lua` e crea un menu parlato navigabile da tastiera per civiltà, modifica/annulla nome, tipo mappa, scenario, dimensione mappa, difficoltà, velocità, casuale, avanzate, indietro e avvia.
+- Il wrapper del setup usa un hard guard sulla catena front-end di Civ-V-Access (`BaseMenu`, `BaseMenuItems`, `SpeechPipeline`, `Log`). Se la catena non è disponibile, esce prima di installare handler e lascia invariata la schermata VP per i giocatori vedenti.
+
+Limite noto: il popup Impostazioni avanzate aperto dal pulsante Avanzate non è ancora vocalizzato da questo layer. Deve comunque aprirsi per i giocatori vedenti; il lavoro di accessibilità è tracciato come `VP-ADVANCEDSETUP-1`.
+
+---
+
 ## Architecture / Architettura
 
 **EN** This mod is a standalone compatibility layer. It does **not** modify Civ-V-Access or Vox Populi files. It follows the same pattern as VP's `(3a) VP - EUI Compatibility Files`.

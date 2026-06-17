@@ -2,19 +2,23 @@
 
 ## Sintesi (IT)
 
-Milestone 2 **non** è ancora in implementazione. Dipende dalla validazione
-in-game di Milestone 1. Questo documento registra la proprietà verificata
-delle schermate VP no-EUI, il pattern di porting e un backlog per schermata.
-Per ogni schermata la superficie reale degli hook va ancora verificata
-leggendo il file VP e il wrapper CVA corrispondente: **non inventare**.
+Milestone 2 è iniziato con una schermata stretta e verificata:
+`GameSetupScreen` (setup nuova partita / “Imposta partita”). Il resto di
+Milestone 2 dipende ancora dalla validazione in-game di Milestone 1 e va
+affrontato una schermata alla volta. Questo documento registra la proprietà
+verificata delle schermate VP no-EUI, il pattern di porting e un backlog per
+schermata. Per ogni schermata la superficie reale degli hook va ancora
+verificata leggendo il file VP e il wrapper CVA corrispondente: **non inventare**.
 
 ## Summary (EN)
 
-Milestone 2 is **not** in implementation yet. It depends on in-game
-validation of Milestone 1. This file records verified ownership of the VP
-no-EUI screens, the porting pattern, and a per-screen backlog. For each
-screen the real hook surface still has to be verified by reading the VP file
-and the matching CVA wrapper: **do not invent**.
+Milestone 2 has started with one narrow verified screen: `GameSetupScreen`
+(new-game setup / “Set up game”). The rest of Milestone 2 still depends on
+Milestone 1 in-game validation and must proceed one screen at a time. This
+file records verified ownership of the VP no-EUI screens, the porting pattern,
+and a per-screen backlog. For each screen the real hook surface still has to
+be verified by reading the VP file and the matching CVA wrapper: **do not
+invent**.
 
 ---
 
@@ -88,15 +92,31 @@ Readiness states: `not-started` (no per-screen research done yet).
   - `src/vp-compat/UI/FrontEnd/GameSetupScreen.lua` — VP v17 verbatim + bridge
     include. MD5 `778BD07203D3309A15A3D08C9356024C`.
   - `src/vp-compat/UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua` — accessibility
-    wrapper. MD5 `E4DBB5138064B866E073EB290CFFEC72`.
+    wrapper. MD5 `D85BCFF2B6CF188D07D3FF7B29D664D5`.
 - **Controls covered** (buildItems, 12 items):
   CivilizationButton, EditButton, RemoveButton, MapTypeButton, ScenarioCheck
   (LoadScenarioBox visibility), MapSizeButton, DifficultyButton, GameSpeedButton,
   RandomizeButton, AdvancedButton, BackButton, StartButton.
-- **Controls NOT covered** (not in VP GameSetupScreen, only in AdvancedSetup popup):
-  EraPullDown, MinorCivsSlider, MaxTurnsCheck, MaxTurnsEdit, AI player slots,
-  victory conditions, game options. These are accessible via AdvancedButton →
-  native AdvancedSetup popup (separate task, not VP-SETUP-ACCESS-1 scope).
+- **Child Context coverage**: `SelectCivilization`, `SelectMapType`,
+  `SelectMapSize`, `SelectDifficulty`, `SelectGameSpeed`, and `SetCivNames`
+  have dedicated Civ-V-Access front-end wrappers. VP's parent screen opens
+  those vanilla child Contexts; runtime confirmation remains a MANUAL item.
+- **Two Contexts, one stem (modding flow)**: the same `GameSetupScreen` stem
+  backs two front-end Contexts. `GameSetupScreen` is reached from Main Menu →
+  Single Player; `ModdingGameSetupScreen` is reached from Mods → Next → Single
+  Player → Play Map and is declared as a `<LuaContext FileName="Assets/UI/
+  FrontEnd/GameSetup/GameSetupScreen" ID="ModdingGameSetupScreen">` inside
+  `ModsSinglePlayer.xml`. With VP active, the only reachable path is the modding
+  one. Our override carries the bridge `include`, and the wrapper installs
+  context-agnostically (no `bIsModding` / `ContextPtr:GetID()` gate), so both
+  Contexts are covered by the single `GameSetupScreen.lua` override. The mods-
+  flow screens themselves (`ModsMenu`, `ModsSinglePlayer`) are not overridden
+  by VP, so Civ-V-Access keeps covering them.
+- **Controls NOT covered by this task** (not in VP GameSetupScreen; live in the
+  AdvancedSetup popup): EraPullDown, MinorCivsSlider, MaxTurnsCheck,
+  MaxTurnsEdit, AI player slots, victory conditions, and game options. The
+  Advanced button should open the popup for sighted players, but the popup is
+  not yet vocalized by this compatibility layer. Track as `VP-ADVANCEDSETUP-1`.
 - **Hardcoded VP strings**: none. VP uses `Locale.ConvertTextKey` for all its UI
   text. `VP_TRANS` table is intentionally empty.
 - **FALLBACK_STRINGS**:
@@ -107,6 +127,7 @@ Readiness states: `not-started` (no per-screen research done yet).
   - keyboard navigation covers all 12 controls
   - map type / difficulty / speed buttons read current values
   - Start Game and Back buttons reachable via keyboard
+  - Advanced button opens AdvancedSetup for sighted players, with no speech yet
   - no regression for sighted players
   - strings spoken in active language (it_IT/en_US)
 

@@ -42,7 +42,9 @@
 
   FACTS VERIFIED:
     - Source WorldView.lua MD5 = C6CA647B715CD966584EC4694674296F (matches modinfo)
-    - Two files to deploy: CivVAccess_VoxPopuli.modinfo and UI\InGame\WorldView.lua
+        - Four files to deploy: CivVAccess_VoxPopuli.modinfo,
+            UI\InGame\WorldView.lua, UI\FrontEnd\GameSetupScreen.lua, and
+            UI\FrontEnd\CivVAccess_VP_GameSetupAccess.lua
     - MODS path derived via [Environment]::GetFolderPath('MyDocuments')
 
   [ASSUNZIONE] The Civ V MODS path is always under My Documents\My Games\

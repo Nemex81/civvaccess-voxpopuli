@@ -33,6 +33,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   script now copies all 4 mod files (modinfo, WorldView.lua, GameSetupScreen.lua,
   CivVAccess_VP_GameSetupAccess.lua) with existing MD5 verification, snapshot,
   and rollback behaviour unchanged. (VP-SETUP-ACCESS-1)
+- `README.md` and `docs/analysis/milestone2-readiness.md`: documented the
+  Vox Populi new-game setup coverage, child Context strategy, and the known
+  AdvancedSetup popup limitation. (VP-SETUP-ACCESS-1)
+- `docs/analysis/milestone2-readiness.md`: documented that the single
+  `GameSetupScreen.lua` override covers both setup Contexts — the Main Menu
+  path (`GameSetupScreen`) and the Mods path (`ModdingGameSetupScreen`,
+  declared as a LuaContext in `ModsSinglePlayer.xml`). With Vox Populi active
+  the Mods path is the only reachable one. (VP-SETUP-ACCESS-1)
+- `tools/validate-vp-compat.ps1`: added an AUTO check that the setup wrapper
+  installs context-agnostically (no `bIsModding` / `ContextPtr:GetID()` gate,
+  so it covers both setup Contexts) and 3 MANUAL items for the
+  Mods -> Next -> Single Player -> Play Map path. (VP-SETUP-ACCESS-1)
 - `tools/validate-vp-compat.ps1`: added AUTO checks for deploy.ps1 presence
   and `-ModsDir` parameter declaration (Ciclo B, DEPLOY-1); added 8 AUTO checks
   for GameSetupScreen.lua and CivVAccess_VP_GameSetupAccess.lua (path, import
