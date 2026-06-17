@@ -3,7 +3,9 @@
   Deploys the civvaccess-voxpopuli compatibility mod to the Civ V MODS folder.
 
 .DESCRIPTION
-  Copies CivVAccess_VoxPopuli.modinfo and UI\InGame\WorldView.lua from
+  Copies CivVAccess_VoxPopuli.modinfo, UI\InGame\WorldView.lua,
+  UI\FrontEnd\GameSetupScreen.lua, and
+  UI\FrontEnd\CivVAccess_VP_GameSetupAccess.lua from
   src\vp-compat\ into the Civ V MODS directory under the civvaccess-voxpopuli
   subfolder. Resolves the MODS path from Windows My Documents API to avoid
   hardcoding the user name.
@@ -71,8 +73,10 @@ $modSubDir  = "civvaccess-voxpopuli"
 
 # Ordered list of files to deploy: source absolute path + destination relative path.
 $filesToDeploy = @(
-    [ordered]@{ Src = Join-Path $compatRoot "CivVAccess_VoxPopuli.modinfo"; Rel = "CivVAccess_VoxPopuli.modinfo" }
-    [ordered]@{ Src = Join-Path $compatRoot "UI\InGame\WorldView.lua";      Rel = "UI\InGame\WorldView.lua" }
+    [ordered]@{ Src = Join-Path $compatRoot "CivVAccess_VoxPopuli.modinfo";                    Rel = "CivVAccess_VoxPopuli.modinfo" }
+    [ordered]@{ Src = Join-Path $compatRoot "UI\InGame\WorldView.lua";                         Rel = "UI\InGame\WorldView.lua" }
+    [ordered]@{ Src = Join-Path $compatRoot "UI\FrontEnd\GameSetupScreen.lua";                 Rel = "UI\FrontEnd\GameSetupScreen.lua" }
+    [ordered]@{ Src = Join-Path $compatRoot "UI\FrontEnd\CivVAccess_VP_GameSetupAccess.lua";   Rel = "UI\FrontEnd\CivVAccess_VP_GameSetupAccess.lua" }
 )
 
 # Writes a structured log message to stderr so deploy progress is visible without

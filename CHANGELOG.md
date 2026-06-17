@@ -24,6 +24,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
+- `tools/deploy.ps1`: added `UI/FrontEnd/GameSetupScreen.lua` and
+  `UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua` to the deploy file list;
+  script now copies all 4 mod files (modinfo, WorldView.lua, GameSetupScreen.lua,
+  CivVAccess_VP_GameSetupAccess.lua) with existing MD5 verification, snapshot,
+  and rollback behaviour unchanged. (VP-SETUP-ACCESS-1)
 - `tools/validate-vp-compat.ps1`: added AUTO checks for deploy.ps1 presence
   and `-ModsDir` parameter declaration (Ciclo B, DEPLOY-1); added 8 AUTO checks
   for GameSetupScreen.lua and CivVAccess_VP_GameSetupAccess.lua (path, import
