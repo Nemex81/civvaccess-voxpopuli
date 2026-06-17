@@ -224,11 +224,16 @@ local handler = BaseMenu.install(ContextPtr, {
             textKey     = "TXT_KEY_BACK_BUTTON",
             activate    = function() OnBack() end,
         }),
-        -- 12. Start game. Label reads the live button text because VP changes
-        --     it to TXT_KEY_START_SCENARIO when a WB scenario is selected.
+        -- 12. Start game. Uses a static textKey rather than labelFn because
+        --     GridButton:GetText() is not documented in the Civ V Lua API and
+        --     its availability cannot be guaranteed at runtime. The WB scenario
+        --     case (VP changes the label to TXT_KEY_START_SCENARIO when a World
+        --     Builder map is loaded) is out of scope for M2 and tracked under
+        --     VP-ADVANCEDSETUP-1. Sighted players see the dynamic label; the
+        --     spoken label is always "Start game".
         BaseMenuItems.Button({
             controlName = "StartButton",
-            labelFn     = labelFromControl("StartButton"),
+            textKey     = "TXT_KEY_START_GAME",
             activate    = function() OnStart() end,
         }),
     },

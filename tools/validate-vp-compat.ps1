@@ -214,6 +214,7 @@ Manual "[VP-SETUP-ACCESS-1] Back button reachable and announced via keyboard"
 Manual "[VP-SETUP-ACCESS-1] no regression: screen usable for sighted players"
 Manual "[VP-SETUP-ACCESS-1] all strings spoken in active language (it_IT/en_US)"
 Manual "[VP-SETUP-ACCESS-1] Advanced button opens advanced setup popup via keyboard"
+Manual "[OUT-OF-SCOPE-M2] Advanced popup not yet vocalized - tracked as VP-ADVANCEDSETUP-1; expected behavior: popup opens for sighted players, no speech"
 
 Write-Host ""
 if ($fail -eq 0) { Write-Host "RESULT: all [AUTO] checks passed." -ForegroundColor Green; exit 0 }

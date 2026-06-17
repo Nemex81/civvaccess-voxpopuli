@@ -28,4 +28,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   and `-ModsDir` parameter declaration (Ciclo B, DEPLOY-1); added 8 AUTO checks
   for GameSetupScreen.lua and CivVAccess_VP_GameSetupAccess.lua (path, import
   flag, MD5, include stem, sentinel flag); added 8 MANUAL items for in-game
-  validation of the setup screen. (VP-SETUP-ACCESS-1)
+  validation of the setup screen; added 1 OUT-OF-SCOPE-M2 MANUAL item for
+  AdvancedSetup popup. (VP-SETUP-ACCESS-1)
+
+### Fixed
+
+- `src/vp-compat/UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua` (PUNTO A):
+  confirmed `OnAdvanced` is the exact callback name registered by VP for
+  AdvancedButton — no rename required; item 10 activate is correct.
+  (VP-SETUP-ACCESS-1-FIX)
+- `src/vp-compat/UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua` (PUNTO B):
+  replaced `labelFn = labelFromControl("StartButton")` with
+  `textKey = "TXT_KEY_START_GAME"` for item 12; `GridButton:GetText()` is not
+  documented in the Civ V Lua API and cannot be guaranteed at runtime. The WB
+  scenario dynamic label (TXT_KEY_START_SCENARIO) is out of scope for M2 and
+  tracked under VP-ADVANCEDSETUP-1. (VP-SETUP-ACCESS-1-FIX)
+- `tools/validate-vp-compat.ps1` (PUNTO C): added `[OUT-OF-SCOPE-M2]` MANUAL
+  item noting the AdvancedSetup popup is not yet vocalized, tracked as
+  VP-ADVANCEDSETUP-1. (VP-SETUP-ACCESS-1-FIX)
