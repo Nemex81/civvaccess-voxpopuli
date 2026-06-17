@@ -136,6 +136,65 @@ if (Test-Path -LiteralPath $deployScript) {
     Fail "tools/deploy.ps1 not found (run DEPLOY-1 task to create it)"
 }
 
+# --- VP-SETUP-ACCESS-1: GameSetupScreen.lua (VP screen copy + bridge) ----
+$setupScreen = Join-Path $compatRoot "UI\FrontEnd\GameSetupScreen.lua"
+$setupScreenNode = $x.Mod.Files.File | Where-Object { $_.'#text' -match 'GameSetupScreen\.lua$' }
+if (-not $setupScreenNode) {
+    Fail "no <File> entry for GameSetupScreen.lua in modinfo"
+} else {
+    $ssPath = $setupScreenNode.'#text'
+    $ssOnDisk = Join-Path $compatRoot ($ssPath -replace '/', '\')
+    if (Test-Path -LiteralPath $ssOnDisk) { Pass "File path resolves on disk ($ssPath)" }
+    else { Fail "File path does not resolve on disk ($ssPath)" }
+
+    if ("$($setupScreenNode.import)" -eq "1") { Pass "GameSetupScreen.lua import flag is 1" }
+    else { Fail "GameSetupScreen.lua import flag is '$($setupScreenNode.import)' (expected 1)" }
+
+    if (Test-Path -LiteralPath $ssOnDisk) {
+        $ssMd5 = (Get-FileHash -Algorithm MD5 -LiteralPath $ssOnDisk).Hash
+        if ($setupScreenNode.md5 -and ($setupScreenNode.md5.ToUpper() -eq $ssMd5.ToUpper())) {
+            Pass "GameSetupScreen.lua MD5 matches manifest ($ssMd5)"
+        } else {
+            Fail "GameSetupScreen.lua MD5 mismatch (manifest=$($setupScreenNode.md5) actual=$ssMd5)"
+        }
+
+        $ssContent = Get-Content -LiteralPath $ssOnDisk -Raw
+        $bridgeCount = ([regex]::Matches($ssContent, 'include\("CivVAccess_VP_GameSetupAccess"\)')).Count
+        if ($bridgeCount -eq 1) { Pass "GameSetupScreen.lua contains exactly one include(`"CivVAccess_VP_GameSetupAccess`")" }
+        else { Fail "GameSetupScreen.lua include count for CivVAccess_VP_GameSetupAccess = $bridgeCount (expected 1)" }
+    }
+}
+
+# --- VP-SETUP-ACCESS-1: CivVAccess_VP_GameSetupAccess.lua (wrapper) ------
+$wrapperNode = $x.Mod.Files.File | Where-Object { $_.'#text' -match 'CivVAccess_VP_GameSetupAccess\.lua$' }
+if (-not $wrapperNode) {
+    Fail "no <File> entry for CivVAccess_VP_GameSetupAccess.lua in modinfo"
+} else {
+    $wPath = $wrapperNode.'#text'
+    $wOnDisk = Join-Path $compatRoot ($wPath -replace '/', '\')
+    if (Test-Path -LiteralPath $wOnDisk) { Pass "File path resolves on disk ($wPath)" }
+    else { Fail "File path does not resolve on disk ($wPath)" }
+
+    if ("$($wrapperNode.import)" -eq "1") { Pass "CivVAccess_VP_GameSetupAccess.lua import flag is 1" }
+    else { Fail "CivVAccess_VP_GameSetupAccess.lua import flag is '$($wrapperNode.import)' (expected 1)" }
+
+    if (Test-Path -LiteralPath $wOnDisk) {
+        $wMd5 = (Get-FileHash -Algorithm MD5 -LiteralPath $wOnDisk).Hash
+        if ($wrapperNode.md5 -and ($wrapperNode.md5.ToUpper() -eq $wMd5.ToUpper())) {
+            Pass "CivVAccess_VP_GameSetupAccess.lua MD5 matches manifest ($wMd5)"
+        } else {
+            Fail "CivVAccess_VP_GameSetupAccess.lua MD5 mismatch (manifest=$($wrapperNode.md5) actual=$wMd5)"
+        }
+
+        $wContent = Get-Content -LiteralPath $wOnDisk -Raw
+        if ($wContent -match 'VPSetupAccess_Installed\s*=\s*true') {
+            Pass "CivVAccess_VP_GameSetupAccess.lua contains VPSetupAccess_Installed sentinel"
+        } else {
+            Fail "CivVAccess_VP_GameSetupAccess.lua missing VPSetupAccess_Installed sentinel"
+        }
+    }
+}
+
 # --- In-game checks this script cannot perform ---------------------------
 Manual "boot speech fires on LoadScreenClose (Lua.log probe, LoggingEnabled=1)"
 Manual "accessible cursor initialises; map keys respond (incl. PageUp/PageDown scanner)"
@@ -143,6 +202,18 @@ Manual "load-game-from-game re-fires boot (WorldView re-init)"
 Manual "include(`"CivVAccess_Boot`") resolves cross-source (mod -> CVA DLC VFS)"
 Manual "this mod's WorldView.lua wins the VFS over VP's and CVA's"
 Manual "no regression for sighted testers (camera pan/zoom, strategic view)"
+Manual "[VP-SETUP-ACCESS-1] setup screen announces name on open (VP no-EUI active)"
+Manual "[VP-SETUP-ACCESS-1] first control (CivilizationButton) announced on screen open"
+Manual "[VP-SETUP-ACCESS-1] keyboard navigation covers all 12 controls (Tab/arrows)"
+Manual "[VP-SETUP-ACCESS-1] map type button reads current map type value"
+Manual "[VP-SETUP-ACCESS-1] difficulty button reads current difficulty value"
+Manual "[VP-SETUP-ACCESS-1] game speed button reads current game speed value"
+Manual "[VP-SETUP-ACCESS-1] civilization button reads current leader/civ/trait"
+Manual "[VP-SETUP-ACCESS-1] Start Game button reachable and announced via keyboard"
+Manual "[VP-SETUP-ACCESS-1] Back button reachable and announced via keyboard"
+Manual "[VP-SETUP-ACCESS-1] no regression: screen usable for sighted players"
+Manual "[VP-SETUP-ACCESS-1] all strings spoken in active language (it_IT/en_US)"
+Manual "[VP-SETUP-ACCESS-1] Advanced button opens advanced setup popup via keyboard"
 
 Write-Host ""
 if ($fail -eq 0) { Write-Host "RESULT: all [AUTO] checks passed." -ForegroundColor Green; exit 0 }

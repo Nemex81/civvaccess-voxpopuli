@@ -41,9 +41,21 @@ here so it is not lost. Fix is a one-line path correction per link.
 
 ## DEPLOY-3: No CHANGELOG yet
 
-State: not-started. Priority: low.
+State: resolved (CHANGELOG.md created under DEPLOY-1, 2026-06-16).
 
-The project copilot-instructions reference a `CHANGELOG.md` under
-`## [Unreleased]` "if the repository uses a changelog". None exists yet.
-Consider adding one when the first player-facing, installable build is cut
-(gated on DEPLOY-1).
+---
+
+## VP-SETUP-ACCESS-1: GameSetupScreen accessibility wrapper
+
+State: implemented (2026-06-17). Pending in-game validation (MANUAL items).
+
+Task ID: VP-SETUP-ACCESS-1. Milestone 2, first screen.
+
+Files created:
+- `src/vp-compat/UI/FrontEnd/GameSetupScreen.lua` — VP v17 verbatim + bridge
+- `src/vp-compat/UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua` — wrapper
+
+Dependencies: Milestone 1 validated in-game (boot, cursor, map keys).
+
+In-game validation required before this screen can be considered done:
+see `[VP-SETUP-ACCESS-1]` items in `tools/validate-vp-compat.ps1`.

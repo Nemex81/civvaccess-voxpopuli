@@ -13,8 +13,19 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `tools/deploy.ps1`: idempotent deploy script with MD5 verification and
   rollback for copying the mod into the Civ V MODS folder from any Windows
   Documents path. Supports `-ModsDir` override. Closes DEPLOY-1.
+- `src/vp-compat/UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua`: accessibility
+  wrapper for the VP no-EUI "Set up game" screen; keyboard-navigable spoken
+  menu with 12 controls (civilization, map type, map size, difficulty, game
+  speed, randomize, advanced, edit/remove civ name, scenario checkbox, back,
+  start) announced in Italian and English. (VP-SETUP-ACCESS-1)
+- `src/vp-compat/UI/FrontEnd/GameSetupScreen.lua`: VP v17 no-EUI verbatim copy
+  with appended include bridge; overrides VP's VFS entry so the accessibility
+  wrapper loads. (VP-SETUP-ACCESS-1)
 
 ### Changed
 
 - `tools/validate-vp-compat.ps1`: added AUTO checks for deploy.ps1 presence
-  and `-ModsDir` parameter declaration (Ciclo B, DEPLOY-1).
+  and `-ModsDir` parameter declaration (Ciclo B, DEPLOY-1); added 8 AUTO checks
+  for GameSetupScreen.lua and CivVAccess_VP_GameSetupAccess.lua (path, import
+  flag, MD5, include stem, sentinel flag); added 8 MANUAL items for in-game
+  validation of the setup screen. (VP-SETUP-ACCESS-1)

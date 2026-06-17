@@ -76,6 +76,40 @@ For every screen, the following must be read and recorded before any code:
 
 Readiness states: `not-started` (no per-screen research done yet).
 
+### GameSetupScreen — implemented (VP-SETUP-ACCESS-1, 2026-06-17)
+
+- **Ipotesi B confirmed**: VP overrides `GameSetupScreen.lua` with `import="1"`.
+  VP file: `Community-Patch-DLL/(2) Vox Populi/Core Files/Overrides/GameSetupScreen.lua`.
+  MD5 `01E57106E3DF3EB96388222C9BA34D1A`.
+- **CVA reference**: `Civ-V-Access/src/dlc/UI/FrontEnd/CivVAccess_GameSetupScreenAccess.lua`.
+  VP uses the **same** Controls.* and global function names as the base game,
+  so the CVA pattern applies without renaming.
+- **Files created**:
+  - `src/vp-compat/UI/FrontEnd/GameSetupScreen.lua` — VP v17 verbatim + bridge
+    include. MD5 `778BD07203D3309A15A3D08C9356024C`.
+  - `src/vp-compat/UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua` — accessibility
+    wrapper. MD5 `E4DBB5138064B866E073EB290CFFEC72`.
+- **Controls covered** (buildItems, 12 items):
+  CivilizationButton, EditButton, RemoveButton, MapTypeButton, ScenarioCheck
+  (LoadScenarioBox visibility), MapSizeButton, DifficultyButton, GameSpeedButton,
+  RandomizeButton, AdvancedButton, BackButton, StartButton.
+- **Controls NOT covered** (not in VP GameSetupScreen, only in AdvancedSetup popup):
+  EraPullDown, MinorCivsSlider, MaxTurnsCheck, MaxTurnsEdit, AI player slots,
+  victory conditions, game options. These are accessible via AdvancedButton →
+  native AdvancedSetup popup (separate task, not VP-SETUP-ACCESS-1 scope).
+- **Hardcoded VP strings**: none. VP uses `Locale.ConvertTextKey` for all its UI
+  text. `VP_TRANS` table is intentionally empty.
+- **FALLBACK_STRINGS**:
+  - `TXT_KEY_CIVVACCESS_SCREEN_GAME_SETUP`: en "Set up game" / it "Configura partita"
+- **Blockers for in-game validation** (MANUAL items):
+  - setup screen announces name on open
+  - CivilizationButton announced correctly on screen open
+  - keyboard navigation covers all 12 controls
+  - map type / difficulty / speed buttons read current values
+  - Start Game and Back buttons reachable via keyboard
+  - no regression for sighted players
+  - strings spoken in active language (it_IT/en_US)
+
 - CityView: not-started. High value (city management). CVA wrapper exists.
 - UnitPanel: not-started. High value (unit actions). VP-owned in `(2)`.
 - TopPanel: not-started. Passive yields/stats announcements.
