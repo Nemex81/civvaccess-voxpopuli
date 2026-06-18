@@ -131,7 +131,6 @@ local InterfaceModeMessageHandler =
 	[InterfaceModeTypes.INTERFACEMODE_MOVE_TO_ALL] = {},
 	[InterfaceModeTypes.INTERFACEMODE_ROUTE_TO] = {},
 	[InterfaceModeTypes.INTERFACEMODE_AIRLIFT] = {},
-	[InterfaceModeTypes.INTERFACEMODE_SEALIFT] = {},
 	[InterfaceModeTypes.INTERFACEMODE_NUKE] = {},
 	[InterfaceModeTypes.INTERFACEMODE_PARADROP] = {},
 	[InterfaceModeTypes.INTERFACEMODE_ATTACK] = {},
@@ -476,7 +475,6 @@ InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_MOVE_TO_TYPE][Mouse
 InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_MOVE_TO_ALL][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
 InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_ROUTE_TO][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
 InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_AIRLIFT][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
-InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_SEALIFT][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
 InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_NUKE][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
 InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_PARADROP][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
 InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_AIRSTRIKE][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
@@ -489,7 +487,6 @@ InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_MOVE_TO_TYPE][Mouse
 InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_MOVE_TO_ALL][MouseEvents.PointerUp] = missionTypeLButtonUpHandler;
 InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_ROUTE_TO][MouseEvents.PointerUp] = missionTypeLButtonUpHandler;
 InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_AIRLIFT][MouseEvents.PointerUp] = missionTypeLButtonUpHandler;
-InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_SEALIFT][MouseEvents.PointerUp] = missionTypeLButtonUpHandler;
 InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_NUKE][MouseEvents.PointerUp] = missionTypeLButtonUpHandler;
 InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_PARADROP][MouseEvents.PointerUp] = missionTypeLButtonUpHandler;
 InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_AIRSTRIKE][MouseEvents.PointerUp] = missionTypeLButtonUpHandler;
@@ -688,7 +685,6 @@ end
 --InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_MOVE_TO_ALL][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
 --InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_ROUTE_TO][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
 --InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_AIRLIFT][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
---InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_SEALIFT][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
 --InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_NUKE][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
 --InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_PARADROP][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
 ----InterfaceModeMessageHandler[InterfaceModeTypes.INTERFACEMODE_AIRSTRIKE][MouseEvents.LButtonUp] = missionTypeLButtonUpHandler;
@@ -1266,8 +1262,8 @@ UpdateObserverExitButton();
 -- without losing VP's map logic (camera, interface modes, path preview,
 -- Squads / Route Planner hooks).
 --   Source: Community-Patch-DLL/(2) Vox Populi/Core Files/Overrides/WorldView.lua
---   VP version: (2) Vox Populi v17
---   Source MD5: 7BE13F5850CCAE290717C9717AA8C0D2
+--   VP version: (2) Vox Populi v17 (5.2.7)
+--   Source MD5: EDB69B839C7F6F578D57E1F3C5F4A88B
 -- RE-SYNC: when Vox Populi updates WorldView.lua, replace everything above
 -- this banner with the new VP version and keep the two includes below.
 -- --------------------------------------------------------------------------

@@ -17,13 +17,13 @@
     <ReloadUnitSystem>1</ReloadUnitSystem>
   </Properties>
   <Dependencies>
-    <Mod id="d1b6328c-ff44-4b0d-aad7-c657f83610cd" minversion="150" maxversion="999" title="(1) Community Patch" />
+    <Mod id="d1b6328c-ff44-4b0d-aad7-c657f83610cd" minversion="149" maxversion="999" title="(1) Community Patch" />
     <Mod id="8411a7a8-dad3-4622-a18e-fcc18324c799" minversion="17" maxversion="999" title="(2) Vox Populi" />
   </Dependencies>
   <References />
   <Files>
-    <File md5="C6CA647B715CD966584EC4694674296F" import="1">UI/InGame/WorldView.lua</File>
-    <File md5="778BD07203D3309A15A3D08C9356024C" import="1">UI/FrontEnd/GameSetupScreen.lua</File>
+    <File md5="26B4FC7FB84D256B8F4FE67F62BA9CC9" import="1">UI/InGame/WorldView.lua</File>
+    <File md5="96A483805128FB6AAAC2F88CDE04809D" import="1">UI/FrontEnd/GameSetupScreen.lua</File>
     <File md5="1F6A2E4893E27FA3A2394A0654216C60" import="1">UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua</File>
   </Files>
 </Mod>

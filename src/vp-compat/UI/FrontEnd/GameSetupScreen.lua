@@ -1,4 +1,4 @@
-﻿-------------------------------------------------
+-------------------------------------------------
 -- GameSetup Screen
 -------------------------------------------------
 CivilopediaControl = "/FrontEnd/MainMenu/Other/Civilopedia" -- MUST be before include( "UniqueBonuses" ) to enable pedia callback
@@ -631,6 +631,7 @@ function InputHandler( uiMsg, wParam, lParam )
     end
 end
 ContextPtr:SetInputHandler( InputHandler );
+
 -------------------------------------------------
 -- vp-compat accessibility bridge
 -- Loaded via pcall: never crashes the screen for sighted players.
