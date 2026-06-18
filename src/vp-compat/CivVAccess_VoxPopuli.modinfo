@@ -24,6 +24,6 @@
   <Files>
     <File md5="C6CA647B715CD966584EC4694674296F" import="1">UI/InGame/WorldView.lua</File>
     <File md5="778BD07203D3309A15A3D08C9356024C" import="1">UI/FrontEnd/GameSetupScreen.lua</File>
-    <File md5="D85BCFF2B6CF188D07D3FF7B29D664D5" import="1">UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua</File>
+    <File md5="1F6A2E4893E27FA3A2394A0654216C60" import="1">UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua</File>
   </Files>
 </Mod>

@@ -197,10 +197,57 @@ if (Test-Path -LiteralPath $valPath) {
 }
 
 Write-Host ""
+Write-Host "--- STATIC: wrapper header documents ModdingGameSetupScreen ---"
+
+# Test 11: ModdingGameSetupScreen listed in the wrapper header comment.
+# Both GameSetupScreen (Main Menu path) and ModdingGameSetupScreen (Mods
+# path) load from the same GameSetupScreen stem. If only the first is
+# listed, the Mods path was not verified and the diagnosis is incomplete.
+if (Test-Path -LiteralPath $wrapperPath) {
+    $content = Get-Content -LiteralPath $wrapperPath -Raw
+    if ($content -match 'ModdingGameSetupScreen') {
+        Pass "wrapper header documents ModdingGameSetupScreen Context"
+    } else {
+        Fail "wrapper header does not mention ModdingGameSetupScreen (modding path undocumented)"
+    }
+}
+
+Write-Host ""
+Write-Host "--- STATIC: CivVAccess_FrontendCommon wrapped in pcall ---"
+
+# Test 12: include("CivVAccess_FrontendCommon") is wrapped in pcall.
+# A bare include() failure propagates up and is caught silently by the
+# GameSetupScreen.lua bridge pcall, masking the real failure with a generic
+# "include failed" entry in Lua.log. pcall captures the specific error.
+if (Test-Path -LiteralPath $wrapperPath) {
+    $content = Get-Content -LiteralPath $wrapperPath -Raw
+    if ($content -match 'pcall\s*\(\s*include\s*,\s*"CivVAccess_FrontendCommon"') {
+        Pass "CivVAccess_FrontendCommon include is wrapped in pcall"
+    } else {
+        Fail "CivVAccess_FrontendCommon include is not wrapped in pcall (silent failure risk)"
+    }
+}
+
+Write-Host ""
+Write-Host "--- STATIC: diagnostic logging block present before hard guard ---"
+
+# Test 13: [vp-compat][DEBUG] diagnostic block present before the hard guard.
+# Without it, "guard fired" and "wrapper not loaded" are indistinguishable
+# in Lua.log, making field diagnosis impossible with LoggingEnabled=1.
+if (Test-Path -LiteralPath $wrapperPath) {
+    $content = Get-Content -LiteralPath $wrapperPath -Raw
+    if ($content -match '\[vp-compat\]\[DEBUG\]') {
+        Pass "wrapper contains [vp-compat][DEBUG] diagnostic log before hard guard"
+    } else {
+        Fail "wrapper is missing [vp-compat][DEBUG] diagnostic block (field diagnosis blocked)"
+    }
+}
+
+Write-Host ""
 Write-Host "--- VALIDATE: delegating to validate-vp-compat.ps1 ---"
 Write-Host ""
 
-# Test 10: Full manifest/dependency/import/MD5/syntax suite.
+# Test 14: Full manifest/dependency/import/MD5/syntax suite.
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root "tools\validate-vp-compat.ps1")
 $validateExit = $LASTEXITCODE
 if ($validateExit -eq 0) {
@@ -210,7 +257,7 @@ if ($validateExit -eq 0) {
 }
 
 Write-Host ""
-$total = 10 + 4  # 10 main tests above + 4 deploy file checks
+$total = 13 + 4  # 13 main tests above + 4 deploy file checks
 
 if ($fail -eq 0) {
     Write-Host "RESULT: all static checks passed." -ForegroundColor Green

@@ -199,10 +199,39 @@ if (-not $wrapperNode) {
         # ModsSinglePlayer.xml). With VP active the modding path is the only one
         # reachable, so the wrapper must install in BOTH Contexts: it must not
         # gate on the Context id or the base file's bIsModding flag.
-        if (($wContent -match 'bIsModding') -or ($wContent -match 'ContextPtr:GetID\(\)')) {
+        # Note: reading ContextPtr:GetID() for diagnostic logging is legitimate;
+        # the check targets conditional branches (if ... bIsModding or if ...
+        # GetID() == "..."), not assignment reads used for log messages.
+        $hasGate = ($wContent -match 'bIsModding') -or
+                   ($wContent -match 'if\b[^-\n]*ContextPtr:GetID\b')
+        if ($hasGate) {
             Fail "wrapper gates on Context id / bIsModding (would skip the modding setup Context)"
         } else {
             Pass "wrapper installs context-agnostically (covers GameSetupScreen + ModdingGameSetupScreen)"
+        }
+
+        # ModdingGameSetupScreen must be documented in the header comment.
+        if ($wContent -match 'ModdingGameSetupScreen') {
+            Pass "wrapper header comment lists ModdingGameSetupScreen Context"
+        } else {
+            Fail "wrapper header comment does not mention ModdingGameSetupScreen (VP-SETUP-ACCESS-FIX)"
+        }
+
+        # include("CivVAccess_FrontendCommon") must be wrapped in pcall so a
+        # stem resolution failure in ModdingGameSetupScreen's lua_State is
+        # diagnosed rather than silently caught by the GameSetupScreen.lua
+        # bridge pcall.
+        if ($wContent -match 'pcall\s*\(\s*include\s*,\s*"CivVAccess_FrontendCommon"') {
+            Pass "CivVAccess_FrontendCommon include is wrapped in pcall"
+        } else {
+            Fail "CivVAccess_FrontendCommon include is not wrapped in pcall (VP-SETUP-ACCESS-FIX)"
+        }
+
+        # Diagnostic block must be present before the hard guard.
+        if ($wContent -match '\[vp-compat\]\[DEBUG\]') {
+            Pass "wrapper contains [vp-compat][DEBUG] diagnostic block before hard guard"
+        } else {
+            Fail "wrapper missing [vp-compat][DEBUG] diagnostic block (VP-SETUP-ACCESS-FIX)"
         }
     }
 }
@@ -226,9 +255,10 @@ Manual "[VP-SETUP-ACCESS-1] Back button reachable and announced via keyboard"
 Manual "[VP-SETUP-ACCESS-1] no regression: screen usable for sighted players"
 Manual "[VP-SETUP-ACCESS-1] all strings spoken in active language (it_IT/en_US)"
 Manual "[VP-SETUP-ACCESS-1] Advanced button opens advanced setup popup via keyboard"
-Manual "[VP-SETUP-ACCESS-1][MODDING] Mods -> Next -> Single Player screen is keyboard-navigable and spoken"
-Manual "[VP-SETUP-ACCESS-1][MODDING] Play Map opens the setup screen (ModdingGameSetupScreen) and it speaks"
-Manual "[VP-SETUP-ACCESS-1][MODDING] setup reached via Mods navigates/announces like the Main Menu path"
+Manual "[VP-SETUP-ACCESS-FIX][MODDING] Lua.log with LoggingEnabled=1 shows '[vp-compat][DEBUG] VP setup wrapper context=ModdingGameSetupScreen'"
+Manual "[VP-SETUP-ACCESS-FIX][MODDING] Mods -> Next -> Single Player screen is keyboard-navigable and spoken"
+Manual "[VP-SETUP-ACCESS-FIX][MODDING] Play Map opens the setup screen (ModdingGameSetupScreen) and it speaks"
+Manual "[VP-SETUP-ACCESS-FIX][MODDING] setup reached via Mods navigates/announces like the Main Menu path"
 Manual "[OUT-OF-SCOPE-M2] Advanced popup not yet vocalized - tracked as VP-ADVANCEDSETUP-1; expected behavior: popup opens for sighted players, no speech"
 
 Write-Host ""

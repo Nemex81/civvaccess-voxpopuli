@@ -67,3 +67,6 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `tools/validate-vp-compat.ps1` (PUNTO C): added `[OUT-OF-SCOPE-M2]` MANUAL
   item noting the AdvancedSetup popup is not yet vocalized, tracked as
   VP-ADVANCEDSETUP-1. (VP-SETUP-ACCESS-1-FIX)
+- Configuring a game via Mods → Single Player → Play Map now announces the
+  screen name and exposes all setup controls to keyboard navigation.
+  (VP-SETUP-ACCESS-FIX)

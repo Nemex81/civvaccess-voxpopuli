@@ -19,17 +19,59 @@
 -- is needed. FALLBACK_STRINGS covers the one mod-authored key (screen name).
 --
 -- Front-end Contexts that show this file:
---   Single Player -> New Game (ContextPtr ID = GameSetupScreen)
+--   Single Player -> New Game                 (ContextPtr ID = GameSetupScreen)
+--   Mods -> Next -> Single Player -> Play Map (ContextPtr ID = ModdingGameSetupScreen)
 
-include("CivVAccess_FrontendCommon")
+-- pcall guard: ensures a stem resolution failure in this Context (e.g. a
+-- chain member unreachable in ModdingGameSetupScreen's lua_State) is
+-- diagnosed instead of propagating silently through the GameSetupScreen.lua
+-- bridge pcall, where it would appear only as a generic "include failed" entry.
+local _cvaBoot_ok, _cvaBoot_err = pcall(include, "CivVAccess_FrontendCommon")
+if not _cvaBoot_ok then
+    -- Primary chain failed. Try the subset needed for the hard guard to pass.
+    -- Stem cache makes re-includes no-ops for stems already loaded by a
+    -- partial chain run before the failure point.
+    local _fallbacks = {
+        "CivVAccess_Log",
+        "CivVAccess_SpeechPipeline",
+        "CivVAccess_BaseMenuCore",
+        "CivVAccess_BaseMenuInstall",
+        "CivVAccess_BaseMenuItems",
+    }
+    for _, m in ipairs(_fallbacks) do
+        local ok2, err2 = pcall(include, m)
+        if not ok2 then
+            if Log ~= nil then
+                Log.warn("[vp-compat] fallback include failed: " .. m .. ": " .. tostring(err2))
+            else
+                print("[vp-compat][WARNING] fallback include failed: " .. m .. ": " .. tostring(err2))
+            end
+        end
+    end
+    local _bootErrMsg = "[vp-compat][ERROR] CivVAccess_FrontendCommon failed: " .. tostring(_cvaBoot_err)
+    if Log ~= nil then Log.error(_bootErrMsg) else print(_bootErrMsg) end
+end
+
+-- Diagnostic: records the active Context and module availability in Lua.log
+-- (LoggingEnabled=1). Placed before the hard guard to capture both the
+-- "guard fires" and "installed" outcomes.
+do
+    local _ctxID = (ContextPtr ~= nil and ContextPtr.GetID ~= nil)
+        and ContextPtr:GetID() or "nil"
+    local _diag = "[vp-compat][DEBUG] VP setup wrapper"
+        .. " context=" .. tostring(_ctxID)
+        .. " BaseMenu=" .. tostring(BaseMenu ~= nil)
+        .. " SpeechPipeline=" .. tostring(SpeechPipeline ~= nil)
+        .. " Log=" .. tostring(Log ~= nil)
+    if Log ~= nil then Log.info(_diag) else print(_diag) end
+end
 
 -- Hard guard: if the Civ V Access front-end chain did not resolve (DLC not
 -- active, or its UISkin not exposing UI/Shared to this Context), bail without
 -- touching the screen so VP keeps working for sighted players.
 if BaseMenu == nil or BaseMenuItems == nil or SpeechPipeline == nil or Log == nil then
-    if print ~= nil then
-        print("[vp-compat] CVA front-end modules unavailable; VP game setup not vocalized")
-    end
+    local _guardMsg = "[vp-compat][WARNING] CVA front-end modules unavailable; VP game setup not vocalized"
+    if Log ~= nil then Log.warn(_guardMsg) else print(_guardMsg) end
     return
 end
 

@@ -80,7 +80,7 @@ For every screen, the following must be read and recorded before any code:
 
 Readiness states: `not-started` (no per-screen research done yet).
 
-### GameSetupScreen — implemented (VP-SETUP-ACCESS-1, 2026-06-17)
+### GameSetupScreen — implemented (VP-SETUP-ACCESS-1, 2026-06-17); ModdingGameSetupScreen fix (VP-SETUP-ACCESS-FIX, 2026-06-18)
 
 - **Ipotesi B confirmed**: VP overrides `GameSetupScreen.lua` with `import="1"`.
   VP file: `Community-Patch-DLL/(2) Vox Populi/Core Files/Overrides/GameSetupScreen.lua`.
@@ -92,7 +92,7 @@ Readiness states: `not-started` (no per-screen research done yet).
   - `src/vp-compat/UI/FrontEnd/GameSetupScreen.lua` — VP v17 verbatim + bridge
     include. MD5 `778BD07203D3309A15A3D08C9356024C`.
   - `src/vp-compat/UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua` — accessibility
-    wrapper. MD5 `D85BCFF2B6CF188D07D3FF7B29D664D5`.
+    wrapper. MD5 `1F6A2E4893E27FA3A2394A0654216C60` (updated VP-SETUP-ACCESS-FIX).
 - **Controls covered** (buildItems, 12 items):
   CivilizationButton, EditButton, RemoveButton, MapTypeButton, ScenarioCheck
   (LoadScenarioBox visibility), MapSizeButton, DifficultyButton, GameSpeedButton,
@@ -112,6 +112,17 @@ Readiness states: `not-started` (no per-screen research done yet).
   Contexts are covered by the single `GameSetupScreen.lua` override. The mods-
   flow screens themselves (`ModsMenu`, `ModsSinglePlayer`) are not overridden
   by VP, so Civ-V-Access keeps covering them.
+- **VP-SETUP-ACCESS-FIX (2026-06-18)**: The wrapper header comment previously
+  listed only `GameSetupScreen`, indicating `ModdingGameSetupScreen` had not
+  been verified. Three gaps were fixed: (1) `include("CivVAccess_FrontendCommon")`
+  is now wrapped in pcall with a fallback chain so a stem resolution failure in
+  `ModdingGameSetupScreen`'s lua_State is diagnosed instead of being silently
+  caught by the GameSetupScreen.lua bridge pcall; (2) a `[vp-compat][DEBUG]`
+  diagnostic block was added before the hard guard so "guard fired" and "wrapper
+  not loaded" are distinguishable in Lua.log (LoggingEnabled=1); (3) the hard
+  guard now uses `Log.warn()` when Log is available instead of bare `print()`.
+  The hard guard itself remains unchanged. Strategy: Scenario A (pcall + fallback
+  chain + diagnostic logging).
 - **Controls NOT covered by this task** (not in VP GameSetupScreen; live in the
   AdvancedSetup popup): EraPullDown, MinorCivsSlider, MaxTurnsCheck,
   MaxTurnsEdit, AI player slots, victory conditions, and game options. The
@@ -130,6 +141,11 @@ Readiness states: `not-started` (no per-screen research done yet).
   - Advanced button opens AdvancedSetup for sighted players, with no speech yet
   - no regression for sighted players
   - strings spoken in active language (it_IT/en_US)
+  - **[VP-SETUP-ACCESS-FIX]** Lua.log with LoggingEnabled=1 shows
+    `[vp-compat][DEBUG] VP setup wrapper context=ModdingGameSetupScreen`
+    when the Mods → Single Player → Play Map path is taken
+  - **[VP-SETUP-ACCESS-FIX]** setup reached via Mods path announces and
+    navigates identically to the Main Menu path
 
 - CityView: not-started. High value (city management). CVA wrapper exists.
 - UnitPanel: not-started. High value (unit actions). VP-owned in `(2)`.
