@@ -10,6 +10,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- SelectCivilization popup: navigazione da tastiera con ↑/↓ e vocalizzazione
+  di leader, civiltà e tratto unico per ogni voce. Seleziona con Invio.
+  (VP-SELECT-CIV-1)
 - `tools/deploy.ps1`: idempotent deploy script with MD5 verification and
   rollback for copying the mod into the Civ V MODS folder from any Windows
   Documents path. Supports `-ModsDir` override. Closes DEPLOY-1.

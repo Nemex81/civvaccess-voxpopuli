@@ -1,0 +1,16 @@
+Add SelectCivilization accessibility (VP-SELECT-CIV-1)
+
+VP's SelectCivilization.lua overrides CVA's DLC version, breaking
+keyboard navigation and speech in the civ-picker popup. Fix by
+shipping src/vp-compat/UI/FrontEnd/SelectCivilization.lua: VP
+v17 (5.2.7) verbatim (source MD5 843D7699FF75E54BD4DDB3C5FA02851F)
+plus a pcall bridge to CivVAccess_SelectCivilizationAccess from
+the CVA DLC, which is already compatible with VP's globals.
+
+- add src/vp-compat/UI/FrontEnd/SelectCivilization.lua (MD5 31EAE5FC)
+- add UI/FrontEnd/SelectCivilization.lua to modinfo with import=1
+- add tools/_build_select_civ.ps1 re-sync helper
+- update README.md, CHANGELOG.md, milestone2-readiness.md
+
+All [AUTO] checks in validate-vp-compat.ps1 still pass.
+Release withheld: SelectCivilization runtime not yet confirmed in-game.

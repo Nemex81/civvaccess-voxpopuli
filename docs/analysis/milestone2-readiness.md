@@ -147,6 +147,31 @@ Readiness states: `not-started` (no per-screen research done yet).
   - **[VP-SETUP-ACCESS-FIX]** setup reached via Mods path announces and
     navigates identically to the Main Menu path
 
+### SelectCivilization — implemented (VP-SELECT-CIV-1, 2026-06-18)
+
+- **VP owner**: `(2) Vox Populi/Core Files/Overrides/SelectCivilization.lua`,
+  `import="1"`. Source MD5 `843D7699FF75E54BD4DDB3C5FA02851F`. VP overrides the
+  CVA DLC's own `GameSetup/SelectCivilization.lua`, breaking accessibility.
+- **CVA reference**: `CivVAccess_SelectCivilizationAccess.lua` in the CVA DLC
+  FrontEnd context. Uses `BaseMenu.install` with `priorShowHide`/`priorInput`,
+  rebuilds items from DB.Query (SQL approach, not Stack traversal), announces
+  each civ via `CivDetails.richLabel` (leader, civ short name, unique ability,
+  unique unit/building). Compatible with VP's globals (`ShowHideHandler`,
+  `InputHandler`, `CivilizationSelected`, `IsWBMap`).
+- **Strategy**: verbatim VP copy + pcall bridge directly to
+  `include("CivVAccess_SelectCivilizationAccess")`. No new wrapper needed;
+  CVA's existing implementation is fully compatible with VP's context.
+- **File created**:
+  - `src/vp-compat/UI/FrontEnd/SelectCivilization.lua` — VP v17 verbatim +
+    banner (source MD5 `843D7699FF75E54BD4DDB3C5FA02851F`) + pcall bridge.
+    Output MD5 `31EAE5FCC110748CBF6A1FB9DD853B36`.
+- **Verified**: Lua syntax PASS. MD5 matches modinfo. No BOM. VP verbatim intact.
+- **Dependencies resolved**: `CivVAccess_FrontendCommon` in CVA DLC FrontEnd ✓.
+  `CivVAccess_CivDetails` in CVA DLC Shared ✓ (included by SelectCivilizationAccess).
+- **Blocker remaining** (MANUAL): runtime confirm that `SelectCivilization.lua`
+  VFS is won by our mod; CVA announces first civ on popup open; ↑/↓/Enter work;
+  sighted regression clear.
+
 - CityView: not-started. High value (city management). CVA wrapper exists.
 - UnitPanel: not-started. High value (unit actions). VP-owned in `(2)`.
 - TopPanel: not-started. Passive yields/stats announcements.

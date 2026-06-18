@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "git-commit-select-civ",
+			"type": "shell",
+			"command": "git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" add -A && git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" commit -F \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/tools/_commit_msg.txt\" && git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" log --oneline -3"
+		},
+		{
+			"label": "git-commit-select-civ-2",
+			"type": "shell",
+			"command": "git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" add -A; git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" status --short; git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" commit -F \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/tools/_commit_msg.txt\"; git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" log --oneline -3"
+		}
+	]
+}

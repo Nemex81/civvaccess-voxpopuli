@@ -104,3 +104,4 @@ Write-Host "WorldView.lua               MD5: $wvMD5"
 Write-Host "GameSetupScreen.lua         MD5: $gsMD5"
 Write-Host ""
 Write-Host "=== Also fix Community Patch minversion: 150 -> 149 ==="
+

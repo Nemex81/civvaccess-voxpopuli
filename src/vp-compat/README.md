@@ -27,12 +27,19 @@ Full rationale, the rejected DLC approach, and the Milestone 2 plan are in:
 
 - [CivVAccess_VoxPopuli.modinfo](CivVAccess_VoxPopuli.modinfo): the mod
   manifest. Mod id `b6f3bfdd-b0c5-4d20-b2bf-33d6a7ca9aad` (a fresh identity
-  minted for this mod). Depends on Community Patch (min 150) and Vox Populi
-  (min 17). One `import="1"` override.
-- [UI/InGame/WorldView.lua](UI/InGame/WorldView.lua): Vox Populi v17's
-  no-EUI WorldView.lua, byte-verbatim from line 1 to VP's last line, then an
-  appended banner plus `include("CivVAccess_Boot")` and
-  `include("CivVAccess_WorldViewKeys")`.
+  minted for this mod). Depends on Community Patch (min 149) and Vox Populi
+  (min 17). Four `import="1"` overrides.
+- [UI/InGame/WorldView.lua](UI/InGame/WorldView.lua): Vox Populi v17 (5.2.7)
+  no-EUI WorldView.lua, byte-verbatim, then banner plus `include("CivVAccess_Boot")`
+  and `include("CivVAccess_WorldViewKeys")`.
+- [UI/FrontEnd/GameSetupScreen.lua](UI/FrontEnd/GameSetupScreen.lua): Vox Populi
+  v17 (5.2.7) no-EUI GameSetupScreen.lua, byte-verbatim, then a pcall bridge
+  to `include("CivVAccess_VP_GameSetupAccess")`.
+- [UI/FrontEnd/SelectCivilization.lua](UI/FrontEnd/SelectCivilization.lua): Vox
+  Populi v17 (5.2.7) no-EUI SelectCivilization.lua, byte-verbatim, then a pcall
+  bridge to `include("CivVAccess_SelectCivilizationAccess")` (CVA DLC).
+- [UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua](UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua):
+  accessibility wrapper for the VP new-game setup screen.
 
 ## Prerequisites (runtime)
 
@@ -43,7 +50,7 @@ shipped by Civ-V-Access. All three must be installed and active:
    `CivVAccess_Boot` and `CivVAccess_WorldViewKeys`. Installed as a DLC, not a
    mod, so it cannot be listed in this manifest's `<Dependencies>`; it is a
    hard runtime requirement.
-2. **Community Patch** v150+ (declared dependency).
+2. **Community Patch** v149+ (declared dependency).
 3. **Vox Populi** v17+ no-EUI (declared dependency).
 
 EUI is out of scope: this override is based on VP's no-EUI WorldView.lua. With
