@@ -1,16 +1,25 @@
-Add SelectCivilization accessibility (VP-SELECT-CIV-1)
+Fix SelectCivilization not vocalized (VP-SELECT-CIV-2)
 
-VP's SelectCivilization.lua overrides CVA's DLC version, breaking
-keyboard navigation and speech in the civ-picker popup. Fix by
-shipping src/vp-compat/UI/FrontEnd/SelectCivilization.lua: VP
-v17 (5.2.7) verbatim (source MD5 843D7699FF75E54BD4DDB3C5FA02851F)
-plus a pcall bridge to CivVAccess_SelectCivilizationAccess from
-the CVA DLC, which is already compatible with VP's globals.
+Root cause: CivVAccess_SelectCivilizationAccess (CVA DLC) calls
+rebuildItems() at include-time, which queries Leaders.Description
+via DB. VP has leaders where this field is NULL, causing
+Text.key(nil) -> ConvertTextKey(nil) -> Lua error. The pcall in
+our bridge caught the crash but BaseMenu.install never completed,
+so no accessibility hook was installed.
 
-- add src/vp-compat/UI/FrontEnd/SelectCivilization.lua (MD5 31EAE5FC)
-- add UI/FrontEnd/SelectCivilization.lua to modinfo with import=1
-- add tools/_build_select_civ.ps1 re-sync helper
-- update README.md, CHANGELOG.md, milestone2-readiness.md
+Fix: replace the bridge in SelectCivilization.lua to call a new
+VP-compat-specific wrapper instead of the CVA DLC wrapper.
+
+- add src/vp-compat/UI/FrontEnd/CivVAccess_VP_SelectCivilizationAccess.lua
+  monkeypatches AddCivilizationEntry and AddRandomCivilizationEntry to
+  collect entries lazily at show-time (Title:GetText()), avoiding all
+  DB queries at include-time. Wraps ShowHideHandler and InputHandler
+  for Up/Down/Enter navigation with SpeechPipeline.speakInterrupt.
+- update src/vp-compat/UI/FrontEnd/SelectCivilization.lua bridge to
+  call CivVAccess_VP_SelectCivilizationAccess (MD5 5AFC69A8)
+- update src/vp-compat/CivVAccess_VoxPopuli.modinfo: new MD5 for
+  SelectCivilization.lua + new File entry for VP wrapper (MD5 846C9481)
+- update tools/deploy.ps1: add both SelectCivilization files
+- deploy to MODS/vp-compat verified (MD5 OK for all 3 changed files)
 
 All [AUTO] checks in validate-vp-compat.ps1 still pass.
-Release withheld: SelectCivilization runtime not yet confirmed in-game.

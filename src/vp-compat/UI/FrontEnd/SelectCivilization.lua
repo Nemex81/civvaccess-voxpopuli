@@ -294,16 +294,18 @@ end);
 -- RE-SYNC: when Vox Populi updates SelectCivilization.lua, replace everything
 -- above this banner and recalculate MD5 in the modinfo.
 -- --------------------------------------------------------------------------
--- Bridge: delegates to the CVA accessibility wrapper already shipped in the
--- CVA DLC for the FrontEnd context. CivVAccess_SelectCivilizationAccess is
--- compatible with VP's globals (ShowHideHandler, InputHandler,
--- CivilizationSelected, IsWBMap). pcall: sighted players unaffected if CVA
--- modules are unavailable.
+-- Bridge: delegates to the VP-compat accessibility wrapper.
+-- CivVAccess_VP_SelectCivilizationAccess replaces the CVA DLC wrapper because
+-- CVA's CivVAccess_SelectCivilizationAccess calls rebuildItems() at include-time
+-- and crashes on VP civs with NULL Leaders.Description in the DB (root cause
+-- confirmed in Lua.log: CivVAccess_Text.lua:45 bad argument #1 to
+-- 'ConvertTextKey' (string expected, got nil)). Our wrapper collects entries
+-- lazily via monkeypatched AddCivilizationEntry, avoiding DB queries at load.
 do
     local ok, err = pcall(function()
-        include("CivVAccess_SelectCivilizationAccess")
+        include("CivVAccess_VP_SelectCivilizationAccess")
     end)
     if not ok then
-        print("[vp-compat] SelectCivilization access include failed: " .. tostring(err))
+        print("[vp-compat] SelectCivilization VP access include failed: " .. tostring(err))
     end
 end

@@ -75,10 +75,12 @@ $modSubDir  = "civvaccess-voxpopuli"
 
 # Ordered list of files to deploy: source absolute path + destination relative path.
 $filesToDeploy = @(
-    [ordered]@{ Src = Join-Path $compatRoot "CivVAccess_VoxPopuli.modinfo";                    Rel = "CivVAccess_VoxPopuli.modinfo" }
-    [ordered]@{ Src = Join-Path $compatRoot "UI\InGame\WorldView.lua";                         Rel = "UI\InGame\WorldView.lua" }
-    [ordered]@{ Src = Join-Path $compatRoot "UI\FrontEnd\GameSetupScreen.lua";                 Rel = "UI\FrontEnd\GameSetupScreen.lua" }
-    [ordered]@{ Src = Join-Path $compatRoot "UI\FrontEnd\CivVAccess_VP_GameSetupAccess.lua";   Rel = "UI\FrontEnd\CivVAccess_VP_GameSetupAccess.lua" }
+    [ordered]@{ Src = Join-Path $compatRoot "CivVAccess_VoxPopuli.modinfo";                              Rel = "CivVAccess_VoxPopuli.modinfo" }
+    [ordered]@{ Src = Join-Path $compatRoot "UI\InGame\WorldView.lua";                                   Rel = "UI\InGame\WorldView.lua" }
+    [ordered]@{ Src = Join-Path $compatRoot "UI\FrontEnd\GameSetupScreen.lua";                           Rel = "UI\FrontEnd\GameSetupScreen.lua" }
+    [ordered]@{ Src = Join-Path $compatRoot "UI\FrontEnd\SelectCivilization.lua";                        Rel = "UI\FrontEnd\SelectCivilization.lua" }
+    [ordered]@{ Src = Join-Path $compatRoot "UI\FrontEnd\CivVAccess_VP_SelectCivilizationAccess.lua";    Rel = "UI\FrontEnd\CivVAccess_VP_SelectCivilizationAccess.lua" }
+    [ordered]@{ Src = Join-Path $compatRoot "UI\FrontEnd\CivVAccess_VP_GameSetupAccess.lua";             Rel = "UI\FrontEnd\CivVAccess_VP_GameSetupAccess.lua" }
 )
 
 # Writes a structured log message to stderr so deploy progress is visible without
