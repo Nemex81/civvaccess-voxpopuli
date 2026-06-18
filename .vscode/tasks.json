@@ -40,6 +40,31 @@
 			"label": "git-commit-fix-select-civ",
 			"type": "shell",
 			"command": "git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" add -A; git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" status --short; git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" commit -F \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/tools/_commit_msg.txt\"; git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" log --oneline -3"
+		},
+		{
+			"label": "check-syntax-md5",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -Command \"$f='c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/src/vp-compat/UI/FrontEnd/CivVAccess_VP_SelectCivilizationAccess.lua'; $lua='c:/Users/nemex/OneDrive/Documenti/GitHub/Civ-V-Access/third_party/lua51/lua5.1.exe'; & $lua -e \\\"loadfile('$f')\\\" 2>&1; Write-Host \\\"Exit=$LASTEXITCODE\\\"; Write-Host \\\"MD5=$((Get-FileHash $f -Algorithm MD5).Hash)\\\"\""
+		},
+		{
+			"label": "check-wrapper",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/tools/_check_wrapper.ps1\""
+		},
+		{
+			"label": "validate-richlabel",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/tools/validate-vp-compat.ps1\""
+		},
+		{
+			"label": "deploy-richlabel",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/tools/_deploy_to_mods.ps1\""
+		},
+		{
+			"label": "git-commit-richlabel",
+			"type": "shell",
+			"command": "git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" add -A; git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" status --short; git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" commit -F \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/tools/_commit_msg.txt\"; git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" log --oneline -4"
 		}
 	]
 }

@@ -12,8 +12,7 @@
 -- This wrapper avoids the DB entirely at include-time. Instead, it
 -- monkeypatches AddCivilizationEntry and AddRandomCivilizationEntry (VP
 -- globals in this context) so every entry VP builds is also captured in
--- g_entries with the already-rendered Title:GetText() text. Navigation and
--- speech happen fully at show-time, never at include-time.
+-- g_entries with rich spoken labels built at show-time (never at include-time).
 --
 -- Globals available in this context (VP's SelectCivilization.lua has run):
 --   AddCivilizationEntry, AddRandomCivilizationEntry, CivilizationSelected,
@@ -38,7 +37,144 @@ end
 
 Log.info("[vp-compat] SelectCiv: installing VP-compat accessibility")
 
-local g_entries  = {}   -- { title, civID, scenarioCivID }
+-- ---------------------------------------------------------------------------
+-- Label prefixes: try CVA InGame TXT_KEY first; fall back to English literals
+-- if the keys are not loaded in the FrontEnd context. Locale API is an engine
+-- call (not a DB query), safe at include-time.
+-- ---------------------------------------------------------------------------
+local function _safeKey(key, fallback)
+    local ok, v = pcall(Locale.ConvertTextKey, key)
+    return (ok and v and v ~= key) and v or fallback
+end
+
+local L_ABILITY     = _safeKey("TXT_KEY_CIVVACCESS_UNIQUE_ABILITY",     "Unique ability")
+local L_UNIT        = _safeKey("TXT_KEY_CIVVACCESS_UNIQUE_UNIT",        "Unique unit")
+local L_BUILDING    = _safeKey("TXT_KEY_CIVVACCESS_UNIQUE_BUILDING",    "Unique building")
+local L_IMPROVEMENT = _safeKey("TXT_KEY_CIVVACCESS_UNIQUE_IMPROVEMENT", "Unique improvement")
+local L_REPLACES    = _safeKey("TXT_KEY_CIVVACCESS_REPLACES",           "replaces")
+
+-- ---------------------------------------------------------------------------
+-- Lazy DB query initialisation.  DB.CreateQuery is deferred to first use
+-- inside AddCivilizationEntry (show-time), so include-time is truly DB-free.
+-- ---------------------------------------------------------------------------
+local _unitsQ, _buildingsQ, _improvementsQ
+
+local function _initQueries()
+    if _unitsQ and _buildingsQ and _improvementsQ then return end
+    _unitsQ = DB.CreateQuery([[
+        SELECT UniqueUnit.Description AS UniqueDesc,
+               DefaultUnit.Description AS ReplacesDesc
+        FROM   Civilization_UnitClassOverrides
+               INNER JOIN Units AS UniqueUnit
+                   ON UniqueUnit.Type = Civilization_UnitClassOverrides.UnitType
+               INNER JOIN UnitClasses
+                   ON UnitClasses.Type = Civilization_UnitClassOverrides.UnitClassType
+               LEFT JOIN Units AS DefaultUnit
+                   ON DefaultUnit.Type = UnitClasses.DefaultUnit
+        WHERE  Civilization_UnitClassOverrides.CivilizationType = ?
+               AND Civilization_UnitClassOverrides.UnitType IS NOT NULL]])
+    _buildingsQ = DB.CreateQuery([[
+        SELECT UniqueBuilding.Description AS UniqueDesc,
+               DefaultBuilding.Description AS ReplacesDesc
+        FROM   Civilization_BuildingClassOverrides
+               INNER JOIN Buildings AS UniqueBuilding
+                   ON UniqueBuilding.Type = Civilization_BuildingClassOverrides.BuildingType
+               INNER JOIN BuildingClasses
+                   ON BuildingClasses.Type = Civilization_BuildingClassOverrides.BuildingClassType
+               LEFT JOIN Buildings AS DefaultBuilding
+                   ON DefaultBuilding.Type = BuildingClasses.DefaultBuilding
+        WHERE  Civilization_BuildingClassOverrides.CivilizationType = ?
+               AND Civilization_BuildingClassOverrides.BuildingType IS NOT NULL]])
+    _improvementsQ = DB.CreateQuery([[
+        SELECT Description FROM Improvements WHERE CivilizationType = ?]])
+end
+
+-- Converts a TXT_KEY description string to a localized name, guarding NULL
+-- and unresolved keys.  Returns "" when the value is not usable.
+local function _loc(descKey)
+    if not descKey then return "" end
+    local ok, v = pcall(Locale.ConvertTextKey, descKey)
+    if not ok or not v or v == descKey then return "" end
+    return v
+end
+
+-- Appends "Label: name (replaces X)" to parts, handling nil ReplacesDesc.
+local function _appendUnique(parts, label, uniqueDesc, replacesDesc)
+    local name = _loc(uniqueDesc)
+    if name == "" then return end
+    local value = name
+    if replacesDesc then
+        local rep = _loc(replacesDesc)
+        if rep ~= "" and rep ~= name then
+            value = value .. " (" .. L_REPLACES .. " " .. rep .. ")"
+        end
+    end
+    parts[#parts + 1] = label .. ": " .. value
+end
+
+-- Builds the full rich spoken label for a regular (non-random) civ entry.
+-- Called inside AddCivilizationEntry at show-time; every DB access is
+-- individually guarded by pcall so partial failure never silences the rest.
+local function _buildRichLabel(civType, ct)
+    local parts = {}
+
+    -- 1. Base title: "Leader (Civ) (TraitShort)" — already rendered by VP.
+    local ok1, title = pcall(function() return ct.Title:GetText() end)
+    if ok1 and title and title ~= "" then
+        parts[#parts + 1] = title
+    elseif not ok1 then
+        Log.warn("[vp-compat] SelectCiv: Title:GetText() failed: " .. tostring(title))
+    end
+
+    -- 2. Unique ability description — BonusDescription already set by VP's
+    --    traitsQuery in AddCivilizationEntry before the control is returned.
+    local ok2, bonus = pcall(function() return ct.BonusDescription:GetText() end)
+    if ok2 and bonus and bonus ~= "" then
+        parts[#parts + 1] = L_ABILITY .. ": " .. bonus
+    elseif not ok2 then
+        Log.warn("[vp-compat] SelectCiv: BonusDescription:GetText() failed: " .. tostring(bonus))
+    end
+
+    -- 3. Unique units — lazy query, pcall-protected.
+    local ok3, err3 = pcall(function()
+        _initQueries()
+        for row in _unitsQ(civType) do
+            _appendUnique(parts, L_UNIT, row.UniqueDesc, row.ReplacesDesc)
+        end
+    end)
+    if not ok3 then
+        Log.warn("[vp-compat] SelectCiv: unique units query failed: " .. tostring(err3))
+    end
+
+    -- 4. Unique buildings — lazy query, pcall-protected.
+    local ok4, err4 = pcall(function()
+        _initQueries()
+        for row in _buildingsQ(civType) do
+            _appendUnique(parts, L_BUILDING, row.UniqueDesc, row.ReplacesDesc)
+        end
+    end)
+    if not ok4 then
+        Log.warn("[vp-compat] SelectCiv: unique buildings query failed: " .. tostring(err4))
+    end
+
+    -- 5. Unique improvements — lazy query, pcall-protected.
+    local ok5, err5 = pcall(function()
+        _initQueries()
+        for row in _improvementsQ(civType) do
+            local name = _loc(row.Description)
+            if name ~= "" then
+                parts[#parts + 1] = L_IMPROVEMENT .. ": " .. name
+            end
+        end
+    end)
+    if not ok5 then
+        Log.warn("[vp-compat] SelectCiv: unique improvements query failed: " .. tostring(err5))
+    end
+
+    return table.concat(parts, ", ")
+end
+
+local g_entries  = {}   -- { title, richLabel, civID, scenarioCivID }
 local g_focusIdx = 1
 
 local origAddEntry  = AddCivilizationEntry
@@ -46,38 +182,40 @@ local origAddRandom = AddRandomCivilizationEntry
 local origShowHide  = ShowHideHandler
 local origInput     = InputHandler
 
--- Collect each entry as VP builds it. Title and BonusDescription are already
--- localized and set by AddCivilizationEntry before it returns, so GetText()
--- returns the final display string with no DB dependency here.
+-- Collect each entry as VP builds it.  _buildRichLabel reads already-rendered
+-- controls (Title, BonusDescription) and runs lazy DB queries — all show-time.
 AddCivilizationEntry = function(traitsQuery, populateUniqueBonuses, civ, leaderType, leaderDescription, leaderPortraitIndex, leaderIconAtlas, scenarioCivID)
     local ct = origAddEntry(traitsQuery, populateUniqueBonuses, civ, leaderType, leaderDescription, leaderPortraitIndex, leaderIconAtlas, scenarioCivID)
     if ct then
+        local richLabel = _buildRichLabel(civ.Type, ct)
         local title = ""
-        local ok1, v1 = pcall(function() return ct.Title:GetText() end)
-        if ok1 and v1 and v1 ~= "" then title = v1 end
+        local ok, v = pcall(function() return ct.Title:GetText() end)
+        if ok and v and v ~= "" then title = v end
         g_entries[#g_entries + 1] = {
-            title        = title,
-            civID        = civ.ID,
+            title         = title,
+            richLabel     = richLabel,
+            civID         = civ.ID,
             scenarioCivID = scenarioCivID,
         }
     end
     return ct
 end
 
--- Random entry comes before regular civs in InitCivSelection; append here so
--- index 1 in g_entries matches position 1 in the visual stack.
+-- Random entry: no DB queries, no rich label needed.
 AddRandomCivilizationEntry = function()
     origAddRandom()
     local label = ""
     local ok, v = pcall(Locale.ConvertTextKey, "TXT_KEY_RANDOM_LEADER")
     if ok and v then label = v else label = "Random" end
-    g_entries[#g_entries + 1] = { title = label, civID = -1, scenarioCivID = nil }
+    g_entries[#g_entries + 1] = { title = label, richLabel = "", civID = -1, scenarioCivID = nil }
 end
 
 local function announce(idx)
     local e = g_entries[idx]
-    if not e or e.title == "" then return end
-    SpeechPipeline.speakInterrupt(e.title)
+    if not e then return end
+    local text = (e.richLabel ~= "" and e.richLabel) or e.title
+    if text == "" then return end
+    SpeechPipeline.speakInterrupt(text)
 end
 
 local function setInitialFocus()
@@ -96,7 +234,7 @@ end
 -- the focused entry on open.
 ShowHideHandler = function(bIsHide)
     if not bIsHide then
-        g_entries     = {}
+        g_entries      = {}
         g_bRefreshCivs = true   -- force VP to call InitCivSelection -> our wrappers
     end
     if origShowHide then origShowHide(bIsHide) end
@@ -135,3 +273,4 @@ ContextPtr:SetInputHandler(InputHandler)
 
 VPSelectCivAccess_Installed = true
 Log.info("[vp-compat] SelectCiv: installed (" .. tostring(#g_entries) .. " entries at include-time)")
+

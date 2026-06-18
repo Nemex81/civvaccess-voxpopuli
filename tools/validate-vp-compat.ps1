@@ -236,6 +236,92 @@ if (-not $wrapperNode) {
     }
 }
 
+# --- VP-SELECT-CIV: SelectCivilization.lua (VP verbatim + bridge) ---------
+$scNode = $x.Mod.Files.File | Where-Object { $_.'#text' -match '^UI/FrontEnd/SelectCivilization\.lua$' }
+if (-not $scNode) {
+    Fail "no <File> entry for UI/FrontEnd/SelectCivilization.lua in modinfo"
+} else {
+    $scPath  = $scNode.'#text'
+    $scOnDisk = Join-Path $compatRoot ($scPath -replace '/', '\')
+    if (Test-Path -LiteralPath $scOnDisk) { Pass "File path resolves on disk ($scPath)" }
+    else { Fail "File path does not resolve on disk ($scPath)" }
+
+    if ("$($scNode.import)" -eq "1") { Pass "SelectCivilization.lua import flag is 1" }
+    else { Fail "SelectCivilization.lua import flag is '$($scNode.import)' (expected 1)" }
+
+    if (Test-Path -LiteralPath $scOnDisk) {
+        $scMd5 = (Get-FileHash -Algorithm MD5 -LiteralPath $scOnDisk).Hash
+        if ($scNode.md5 -and ($scNode.md5.ToUpper() -eq $scMd5.ToUpper())) {
+            Pass "SelectCivilization.lua MD5 matches manifest ($scMd5)"
+        } else {
+            Fail "SelectCivilization.lua MD5 mismatch (manifest=$($scNode.md5) actual=$scMd5)"
+        }
+
+        $scContent = Get-Content -LiteralPath $scOnDisk -Raw
+        if ($scContent -match 'include\("CivVAccess_VP_SelectCivilizationAccess"\)') {
+            Pass "SelectCivilization.lua bridges to CivVAccess_VP_SelectCivilizationAccess"
+        } else {
+            Fail "SelectCivilization.lua missing bridge to CivVAccess_VP_SelectCivilizationAccess (VP-SELECT-CIV-2)"
+        }
+    }
+}
+
+# --- VP-SELECT-CIV: CivVAccess_VP_SelectCivilizationAccess.lua (VP wrapper) ----
+$vpscNode = $x.Mod.Files.File | Where-Object { $_.'#text' -match 'CivVAccess_VP_SelectCivilizationAccess\.lua$' }
+if (-not $vpscNode) {
+    Fail "no <File> entry for CivVAccess_VP_SelectCivilizationAccess.lua in modinfo"
+} else {
+    $vpscPath   = $vpscNode.'#text'
+    $vpscOnDisk = Join-Path $compatRoot ($vpscPath -replace '/', '\')
+    if (Test-Path -LiteralPath $vpscOnDisk) { Pass "File path resolves on disk ($vpscPath)" }
+    else { Fail "File path does not resolve on disk ($vpscPath)" }
+
+    if ("$($vpscNode.import)" -eq "1") { Pass "CivVAccess_VP_SelectCivilizationAccess.lua import flag is 1" }
+    else { Fail "CivVAccess_VP_SelectCivilizationAccess.lua import flag is '$($vpscNode.import)' (expected 1)" }
+
+    if (Test-Path -LiteralPath $vpscOnDisk) {
+        $vpscMd5 = (Get-FileHash -Algorithm MD5 -LiteralPath $vpscOnDisk).Hash
+        if ($vpscNode.md5 -and ($vpscNode.md5.ToUpper() -eq $vpscMd5.ToUpper())) {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua MD5 matches manifest ($vpscMd5)"
+        } else {
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua MD5 mismatch (manifest=$($vpscNode.md5) actual=$vpscMd5)"
+        }
+
+        $vpscContent = Get-Content -LiteralPath $vpscOnDisk -Raw
+
+        if ($vpscContent -match 'VPSelectCivAccess_Installed\s*=\s*true') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua contains VPSelectCivAccess_Installed sentinel"
+        } else {
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing VPSelectCivAccess_Installed sentinel"
+        }
+
+        # DB queries for unique units/buildings/improvements must be inside lazy
+        # functions (show-time only), never at the top level of the file.
+        # Presence of _initQueries (the lazy init helper) is the proxy check.
+        if ($vpscContent -match '_initQueries') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua uses lazy DB query init (_initQueries)"
+        } else {
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing _initQueries (DB queries may run at include-time)"
+        }
+
+        # Each lazy query section must be pcall-protected. Check that at least
+        # one pcall wraps the lazy init call.
+        if ($vpscContent -match 'pcall\s*\(function\(\)[\s\S]*?_initQueries') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua has at least one pcall-wrapped lazy query"
+        } else {
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing pcall-protected query (VP-SELECTCIV-RICHLABEL-1)"
+        }
+
+        # Fallback English string for TXT_KEY_CIVVACCESS_UNIQUE_ABILITY must be
+        # present so the label prefix works even when CVA InGame keys are absent.
+        if ($vpscContent -match '"Unique ability"') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua contains fallback for Unique ability label"
+        } else {
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing fallback string for Unique ability label"
+        }
+    }
+}
+
 # --- In-game checks this script cannot perform ---------------------------
 Manual "boot speech fires on LoadScreenClose (Lua.log probe, LoggingEnabled=1)"
 Manual "accessible cursor initialises; map keys respond (incl. PageUp/PageDown scanner)"
@@ -260,6 +346,8 @@ Manual "[VP-SETUP-ACCESS-FIX][MODDING] Mods -> Next -> Single Player screen is k
 Manual "[VP-SETUP-ACCESS-FIX][MODDING] Play Map opens the setup screen (ModdingGameSetupScreen) and it speaks"
 Manual "[VP-SETUP-ACCESS-FIX][MODDING] setup reached via Mods navigates/announces like the Main Menu path"
 Manual "[OUT-OF-SCOPE-M2] Advanced popup not yet vocalized - tracked as VP-ADVANCEDSETUP-1; expected behavior: popup opens for sighted players, no speech"
+Manual "[VP-SELECT-CIV-2] SelectCivilization popup announces each civ (leader, civ name, unique ability, unit, building, improvement)"
+Manual "[VP-SELECT-CIV-2] Up/Down arrows navigate the civ list; Enter selects; sighted regression clear"
 
 Write-Host ""
 if ($fail -eq 0) { Write-Host "RESULT: all [AUTO] checks passed." -ForegroundColor Green; exit 0 }

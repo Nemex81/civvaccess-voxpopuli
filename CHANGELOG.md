@@ -10,6 +10,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- SelectCivilization popup: spoken label for each civ now includes unique
+  ability, unique unit, unique building, and unique improvement alongside
+  leader and civ name. (VP-SELECTCIV-RICHLABEL-1)
 - SelectCivilization popup: navigazione da tastiera con ↑/↓ e vocalizzazione
   di leader, civiltà e tratto unico per ogni voce. Seleziona con Invio.
   (VP-SELECT-CIV-1)

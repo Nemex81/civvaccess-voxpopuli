@@ -25,7 +25,7 @@
     <File md5="26B4FC7FB84D256B8F4FE67F62BA9CC9" import="1">UI/InGame/WorldView.lua</File>
     <File md5="96A483805128FB6AAAC2F88CDE04809D" import="1">UI/FrontEnd/GameSetupScreen.lua</File>
     <File md5="5AFC69A895158557B8C05A8334D171B5" import="1">UI/FrontEnd/SelectCivilization.lua</File>
-    <File md5="846C948156545EBB0FE2E6B67AB84F12" import="1">UI/FrontEnd/CivVAccess_VP_SelectCivilizationAccess.lua</File>
+    <File md5="7E9523DF852FCDB92B84DA33A256089C" import="1">UI/FrontEnd/CivVAccess_VP_SelectCivilizationAccess.lua</File>
     <File md5="1F6A2E4893E27FA3A2394A0654216C60" import="1">UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua</File>
   </Files>
 </Mod>

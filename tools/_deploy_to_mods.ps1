@@ -12,6 +12,7 @@ $files = @(
     @{ S = "CivVAccess_VoxPopuli.modinfo";                           D = "CivVAccess_VoxPopuli.modinfo" }
     @{ S = "UI\FrontEnd\SelectCivilization.lua";                     D = "UI\FrontEnd\SelectCivilization.lua" }
     @{ S = "UI\FrontEnd\CivVAccess_VP_SelectCivilizationAccess.lua"; D = "UI\FrontEnd\CivVAccess_VP_SelectCivilizationAccess.lua" }
+    @{ S = "UI\FrontEnd\CivVAccess_VP_GameSetupAccess.lua";          D = "UI\FrontEnd\CivVAccess_VP_GameSetupAccess.lua" }
 )
 
 foreach ($f in $files) {
