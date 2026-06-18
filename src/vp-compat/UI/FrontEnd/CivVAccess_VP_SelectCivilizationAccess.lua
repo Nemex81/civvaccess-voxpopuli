@@ -182,6 +182,19 @@ local origAddRandom = AddRandomCivilizationEntry
 local origShowHide  = ShowHideHandler
 local origInput     = InputHandler
 
+-- Flush speech before the context is destroyed so no pending callbacks
+-- can reference upvalues of a dead context.  Note: the BackButton callback
+-- was registered before this wrapper ran and holds a direct reference to
+-- VP's original OnBack, so replacing the global covers the ESC path
+-- (via origInput -> VP's InputHandler -> OnBack) and any other caller
+-- that looks up OnBack by name at call-time.
+local origOnBack = OnBack
+OnBack = function()
+    local ok, err = pcall(function() SpeechPipeline.speakInterrupt("") end)
+    if not ok then Log.warn("[vp-compat] SelectCiv: OnBack speech flush failed: " .. tostring(err)) end
+    if origOnBack then origOnBack() end
+end
+
 -- Collect each entry as VP builds it.  _buildRichLabel reads already-rendered
 -- controls (Title, BonusDescription) and runs lazy DB queries — all show-time.
 AddCivilizationEntry = function(traitsQuery, populateUniqueBonuses, civ, leaderType, leaderDescription, leaderPortraitIndex, leaderIconAtlas, scenarioCivID)
@@ -264,6 +277,11 @@ InputHandler = function(uiMsg, wParam, lParam)
                     Log.error("[vp-compat] SelectCiv: CivilizationSelected failed: " .. tostring(err))
                 end
             end
+            return true
+        elseif wParam == Keys.VK_ESCAPE then
+            local ok, err = pcall(function() SpeechPipeline.speakInterrupt("") end)
+            if not ok then Log.warn("[vp-compat] SelectCiv: ESC speech flush failed: " .. tostring(err)) end
+            if origInput then return origInput(uiMsg, wParam, lParam) end
             return true
         end
     end

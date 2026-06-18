@@ -319,6 +319,31 @@ if (-not $vpscNode) {
         } else {
             Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing fallback string for Unique ability label"
         }
+        # VP-SELECTCIV-BACK-CRASH-1: OnBack hook must be installed to flush
+        # the speech queue before the context is destroyed.
+        if ($vpscContent -match 'origOnBack') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua contains origOnBack hook"
+        } else {
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing origOnBack hook (VP-SELECTCIV-BACK-CRASH-1)"
+        }
+
+        if ($vpscContent -match 'speakInterrupt\s*\(\s*""\s*\)') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua flushes speech in OnBack hook"
+        } else {
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing speakInterrupt('') in OnBack (VP-SELECTCIV-BACK-CRASH-1)"
+        }
+
+        if ($vpscContent -match 'VK_ESCAPE') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua intercepts VK_ESCAPE in InputHandler"
+        } else {
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing VK_ESCAPE handler (VP-SELECTCIV-BACK-CRASH-1)"
+        }
+
+        if ($vpscContent -match 'pcall\s*\(\s*function\s*\(\s*\)\s*SpeechPipeline\.speakInterrupt') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua wraps speakInterrupt in pcall inside OnBack hook"
+        } else {
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing pcall around speakInterrupt in OnBack (VP-SELECTCIV-BACK-CRASH-1)"
+        }
     }
 }
 

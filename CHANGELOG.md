@@ -10,6 +10,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- `CivVAccess_VP_SelectCivilizationAccess.lua`: fixed crash on Back button press;
+  speech queue is now flushed before the SelectCivilization context is destroyed.
+  (VP-SELECTCIV-BACK-CRASH-1)
 - SelectCivilization popup: spoken label for each civ now includes unique
   ability, unique unit, unique building, and unique improvement alongside
   leader and civ name. (VP-SELECTCIV-RICHLABEL-1)
