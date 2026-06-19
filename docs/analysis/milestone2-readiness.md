@@ -172,6 +172,44 @@ Readiness states: `not-started` (no per-screen research done yet).
   VFS is won by our mod; CVA announces first civ on popup open; ↑/↓/Enter work;
   sighted regression clear.
 
+### ModsMenu — implemented (VP-MODSMENU-GUARD-1, 2026-06-19)
+
+- **VP owner**: VP does NOT override `ModsMenu.lua`. Civ-V-Access's DLC version
+  (`src/dlc/UI/FrontEnd/ModsMenu.lua`) is normally the active one.
+- **Problem**: CVA's `CivVAccess_ModsMenuAccess.lua` has no hard guard. When
+  VP_LUAAPI reloads in an inconsistent state (VPUI_loader.lua failure), engine
+  objects backing `SpeechPipeline` or `Log` are invalidated before the Lua GC
+  collects them. `BaseMenu.install` then touches a dangling object → native crash.
+  Log evidence: `VP_LUAAPI: File Error: VPUI_loader.lua` → `New api context
+  created!` → `ModsMenu: HandlerStack.push 'ModsMenu' (depth=1)` → crash.
+- **CVA reference**: `CivVAccess_ModsMenuAccess.lua` — 3 items: SinglePlayerButton,
+  MultiPlayerButton, BackButton. Uses `CivVAccess_ModListPreamble` for the
+  enabled-mods preamble. No hard guard in the original.
+- **Pattern**: YnAEMP-Access (`YnAEMP_Access_Setup.lua`) — hard guard before
+  `BaseMenu.install`, pcall bootstrap in the base-game file.
+- **Strategy**: VP-compat override of `ModsMenu.lua` (verbatim base-game body +
+  pcall bridge to `CivVAccess_VP_ModsMenuAccess`) with a new wrapper that adds
+  the hard guard. Since VP doesn't override ModsMenu, our mod's `import="1"` wins
+  over both the base-game file and CVA's DLC file.
+- **Behavior — guard active** (CVA modules nil): includes run, guard fires, `return`
+  before `BaseMenu.install`. Screen works unmodified for sighted players. Print
+  logs the guard activation.
+- **Behavior — pcall absorbs error**: if the wrapper include throws, ModsMenu.lua's
+  pcall catches it, logs via `print`, sentinel stays nil. Screen unaffected.
+- **Behavior — happy path**: includes resolve, guard passes, `BaseMenu.install`
+  with 3 items, sentinel set to `true`, `Log.info` wired.
+- **Files created**:
+  - `src/vp-compat/UI/FrontEnd/ModsMenu.lua` — verbatim base-game body +
+    vp-compat pcall bootstrap. MD5 `68E48A3C1B783D0892C5FCD8A9889724`.
+  - `src/vp-compat/UI/FrontEnd/CivVAccess_VP_ModsMenuAccess.lua` — hard guard +
+    same 3 items as CVA original + sentinel. MD5 `3E60339F25A11E3EAEA5F9CC0A8ED79A`.
+- **Modinfo**: both files registered as `import="1"` in `CivVAccess_VoxPopuli.modinfo`.
+  Version bumped 2→3 (crash fix, crash blocked the screen for blind players).
+- **Static validation**: Loop A PASS (attempt 1), Loop B PASS (attempt 1).
+- **Blocker remaining** (MANUAL): runtime confirm that our ModsMenu.lua wins the
+  VFS; CVA announces screen on open; 3 items navigable via keyboard; sighted
+  regression clear; no crash when VP_LUAAPI reloads.
+
 - CityView: not-started. High value (city management). CVA wrapper exists.
 - UnitPanel: not-started. High value (unit actions). VP-owned in `(2)`.
 - TopPanel: not-started. Passive yields/stats announcements.

@@ -10,6 +10,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- VP-compat: ModsMenu — hard guard aggiunta al bootstrap CVA per prevenire crash
+  nativo quando VP_LUAAPI ricarica in stato inconsistente (VPUI_loader.lua error).
+  Pattern: CivVAccess_VP_ModsMenuAccess + pcall bootstrap in ModsMenu.lua VP-compat.
+  (VP-MODSMENU-GUARD-1)
 - `CivVAccess_VP_SelectCivilizationAccess.lua`: removed DB.CreateQuery prepared
   statements to prevent native access violation (0xC0000005) on context destroy;
   unique components now read from VP's already-rendered icon button tooltips (B1..B6),

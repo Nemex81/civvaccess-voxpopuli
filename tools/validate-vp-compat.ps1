@@ -390,6 +390,105 @@ Manual "[OUT-OF-SCOPE-M2] Advanced popup not yet vocalized - tracked as VP-ADVAN
 Manual "[VP-SELECT-CIV-2] SelectCivilization popup announces each civ (leader, civ name, unique ability, unit, building, improvement)"
 Manual "[VP-SELECT-CIV-2] Up/Down arrows navigate the civ list; Enter selects; sighted regression clear"
 
+# --- VP-MODSMENU-GUARD-1: ModsMenu.lua (VP-compat override + bootstrap) ---
+$mmNode = $x.Mod.Files.File | Where-Object { $_.'#text' -eq 'UI/FrontEnd/ModsMenu.lua' }
+if (-not $mmNode) {
+    Fail "no File entry for UI/FrontEnd/ModsMenu.lua in modinfo"
+} else {
+    $mmPath   = $mmNode.'#text'
+    $mmOnDisk = Join-Path $compatRoot ($mmPath -replace '/', '\')
+    if (Test-Path -LiteralPath $mmOnDisk) { Pass "File path resolves on disk ($mmPath)" }
+    else { Fail "File path does not resolve on disk ($mmPath)" }
+    if ($mmNode.import -eq "1") { Pass "ModsMenu.lua import flag is 1" }
+    else { Fail "ModsMenu.lua import flag is not 1" }
+    if (Test-Path -LiteralPath $mmOnDisk) {
+        $mmMd5 = (Get-FileHash -Algorithm MD5 -LiteralPath $mmOnDisk).Hash
+        if ($mmNode.md5 -and ($mmNode.md5.ToUpper() -eq $mmMd5.ToUpper())) {
+            Pass "ModsMenu.lua MD5 matches manifest ($mmMd5)"
+        } else {
+            Fail "ModsMenu.lua MD5 mismatch (manifest=$($mmNode.md5) actual=$mmMd5)"
+        }
+        $mmContent = Get-Content -LiteralPath $mmOnDisk -Raw
+        if ($mmContent -match 'function NavigateBack') {
+            Pass "ModsMenu.lua contains NavigateBack (verbatim base-game body intact)"
+        } else {
+            Fail "ModsMenu.lua missing NavigateBack (verbatim body may be corrupted)"
+        }
+        if ($mmContent -match 'pcall') {
+            Pass "ModsMenu.lua bootstrap uses pcall"
+        } else {
+            Fail "ModsMenu.lua bootstrap missing pcall (VP-MODSMENU-GUARD-1)"
+        }
+        if ($mmContent -match 'CivVAccessVP_ModsMenuAccess_Installed') {
+            Pass "ModsMenu.lua checks installed sentinel after pcall"
+        } else {
+            Fail "ModsMenu.lua missing installed sentinel check (VP-MODSMENU-GUARD-1)"
+        }
+        if ($mmContent -match 'CivVAccess_VP_ModsMenuAccess') {
+            Pass "ModsMenu.lua includes CivVAccess_VP_ModsMenuAccess wrapper"
+        } else {
+            Fail "ModsMenu.lua missing include for CivVAccess_VP_ModsMenuAccess (VP-MODSMENU-GUARD-1)"
+        }
+    }
+}
+
+# --- VP-MODSMENU-GUARD-1: CivVAccess_VP_ModsMenuAccess.lua (wrapper) ------
+$mmwNode = $x.Mod.Files.File | Where-Object { $_.'#text' -match 'CivVAccess_VP_ModsMenuAccess' }
+if (-not $mmwNode) {
+    Fail "no File entry for CivVAccess_VP_ModsMenuAccess.lua in modinfo"
+} else {
+    $mmwPath   = $mmwNode.'#text'
+    $mmwOnDisk = Join-Path $compatRoot ($mmwPath -replace '/', '\')
+    if (Test-Path -LiteralPath $mmwOnDisk) { Pass "File path resolves on disk ($mmwPath)" }
+    else { Fail "File path does not resolve on disk ($mmwPath)" }
+    if ($mmwNode.import -eq "1") { Pass "CivVAccess_VP_ModsMenuAccess.lua import flag is 1" }
+    else { Fail "CivVAccess_VP_ModsMenuAccess.lua import flag is not 1" }
+    if (Test-Path -LiteralPath $mmwOnDisk) {
+        $mmwMd5 = (Get-FileHash -Algorithm MD5 -LiteralPath $mmwOnDisk).Hash
+        if ($mmwNode.md5 -and ($mmwNode.md5.ToUpper() -eq $mmwMd5.ToUpper())) {
+            Pass "CivVAccess_VP_ModsMenuAccess.lua MD5 matches manifest ($mmwMd5)"
+        } else {
+            Fail "CivVAccess_VP_ModsMenuAccess.lua MD5 mismatch (manifest=$($mmwNode.md5) actual=$mmwMd5)"
+        }
+        $mmwContent = Get-Content -LiteralPath $mmwOnDisk -Raw
+        if ($mmwContent -match 'BaseMenu == nil or BaseMenuItems == nil or SpeechPipeline == nil or Log == nil') {
+            Pass "CivVAccess_VP_ModsMenuAccess.lua contains hard guard (VP-MODSMENU-GUARD-1)"
+        } else {
+            Fail "CivVAccess_VP_ModsMenuAccess.lua missing hard guard (VP-MODSMENU-GUARD-1)"
+        }
+        $hasSingle = ($mmwContent -match 'SinglePlayerButton')
+        $hasMulti  = ($mmwContent -match 'MultiPlayerButton')
+        $hasBack   = ($mmwContent -match 'BackButton')
+        if ($hasSingle -and $hasMulti -and $hasBack) {
+            Pass "CivVAccess_VP_ModsMenuAccess.lua has 3 items: SinglePlayer, MultiPlayer, Back"
+        } else {
+            Fail "CivVAccess_VP_ModsMenuAccess.lua missing one or more of SinglePlayer/MultiPlayer/Back items"
+        }
+        if ($mmwContent -match 'escOnlyInput') {
+            Pass "CivVAccess_VP_ModsMenuAccess.lua uses escOnlyInput(NavigateBack) for priorInput"
+        } else {
+            Fail "CivVAccess_VP_ModsMenuAccess.lua missing escOnlyInput(NavigateBack)"
+        }
+        if ($mmwContent -match 'TXT_KEY_CIVVACCESS_SCREEN_MODS_MENU') {
+            Pass "CivVAccess_VP_ModsMenuAccess.lua sets displayName from TXT_KEY_CIVVACCESS_SCREEN_MODS_MENU"
+        } else {
+            Fail "CivVAccess_VP_ModsMenuAccess.lua missing TXT_KEY_CIVVACCESS_SCREEN_MODS_MENU"
+        }
+        if ($mmwContent -match 'CivVAccessVP_ModsMenuAccess_Installed') {
+            Pass "CivVAccess_VP_ModsMenuAccess.lua contains installed sentinel"
+        } else {
+            Fail "CivVAccess_VP_ModsMenuAccess.lua missing installed sentinel (VP-MODSMENU-GUARD-1)"
+        }
+    }
+}
+
+Write-Host ""
+Manual "[VP-MODSMENU-GUARD-1] ModsMenu screen announces on open (Mods button in main menu)"
+Manual "[VP-MODSMENU-GUARD-1] Single Player, Multiplayer, Back items navigable via keyboard"
+Manual "[VP-MODSMENU-GUARD-1] no crash when VP_LUAAPI reloads; hard guard fires silently"
+Manual "[VP-MODSMENU-GUARD-1] no regression for sighted players"
+
 Write-Host ""
 if ($fail -eq 0) { Write-Host "RESULT: all [AUTO] checks passed." -ForegroundColor Green; exit 0 }
 else { Write-Host "RESULT: $fail [AUTO] check(s) failed." -ForegroundColor Red; exit 1 }
+

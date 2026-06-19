@@ -49,6 +49,7 @@ See: [`docs/milestone2-vp-screens.md`](docs/milestone2-vp-screens.md)
 - The setup wrapper hard-guards on the Civ-V-Access front-end chain (`BaseMenu`, `BaseMenuItems`, `SpeechPipeline`, `Log`). If that chain is unavailable, it exits before installing handlers so sighted players keep the original VP screen.
 
 Known limit: the Advanced Setup popup opened by the Advanced button is not yet vocalized by this compatibility layer. It should still open for sighted players; accessibility work is tracked as `VP-ADVANCEDSETUP-1`.
+- Mods Menu (`ModsMenu`): the VP-compat wrapper adds a hard guard protecting the Civ-V-Access bootstrap from a native crash when VP_LUAAPI reloads in an inconsistent state. The same 3-item keyboard menu as CVA (Single Player, Multiplayer, Back) is provided when CVA is active.
 
 **IT**
 
@@ -57,6 +58,7 @@ Known limit: the Advanced Setup popup opened by the Advanced button is not yet v
 - Il wrapper del setup usa un hard guard sulla catena front-end di Civ-V-Access (`BaseMenu`, `BaseMenuItems`, `SpeechPipeline`, `Log`). Se la catena non è disponibile, esce prima di installare handler e lascia invariata la schermata VP per i giocatori vedenti.
 
 Limite noto: il popup Impostazioni avanzate aperto dal pulsante Avanzate non è ancora vocalizzato da questo layer. Deve comunque aprirsi per i giocatori vedenti; il lavoro di accessibilità è tracciato come `VP-ADVANCEDSETUP-1`.
+- Menu Mods (`ModsMenu`): il wrapper VP-compat aggiunge un hard guard che protegge il bootstrap di Civ-V-Access da un crash nativo quando VP_LUAAPI ricarica in stato inconsistente. Fornisce lo stesso menu a 3 voci del CVA originale (Giocatore singolo, Multiplayer, Indietro) quando CVA è attivo.
 
 ---
 
