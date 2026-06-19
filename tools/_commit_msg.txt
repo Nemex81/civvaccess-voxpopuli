@@ -1,24 +1,26 @@
-fix: flush speech queue on Back to prevent context-destroy crash (VP-SELECTCIV-BACK-CRASH-1)
+fix: remove DB.CreateQuery to prevent native crash on context destroy (VP-SELECTCIV-DBCRASH-1)
 
-When OnBack() is called (ESC or BackButton), DequeuePopup+SetHide destroy
-the SelectCivilization Lua context. Any pending speech callbacks that hold
-references to upvalues of the dead context can crash the engine.
+DB.CreateQuery creates sqlite3_stmt* C++ objects as Lua userdata with native
+finalizers. When UIManager:DequeuePopup + ContextPtr:SetHide destroy the
+SelectCivilization Lua context, the engine can invalidate the DB handle before
+the Lua GC calls those finalizers, causing an access violation (0xC0000005) in
+CvGameDatabaseWin32FinalRelease.dll. No Lua pcall can intercept this.
 
-Fix: hook the OnBack global so the speech queue is flushed before context
-destruction. Also intercept VK_ESCAPE directly in the wrapped InputHandler
-as a safety net for the keyboard path.
+Fix: remove all three prepared statements (_unitsQ, _buildingsQ, _improvementsQ),
+_initQueries(), _appendUnique(), and the three DB-dependent sections (3/4/5) of
+_buildRichLabel. Replace with a zero-DB approach: after VP's AddCivilizationEntry
+returns, read tooltip text from the B1..B6 icon buttons VP already rendered
+(ct["B" .. i]:GetToolTipString()). All DB access is gone from the FrontEnd context.
 
-- hook OnBack global: pcall(speakInterrupt("")) then origOnBack()
-- intercept VK_ESCAPE in InputHandler: flush then pass to origInput
-- every pcall failure logged with Log.warn
-- no existing logic removed
-
-- update src/vp-compat/UI/FrontEnd/CivVAccess_VP_SelectCivilizationAccess.lua
-  (new MD5 5B1D24530EC44512771E66C96B0571AB)
-- update src/vp-compat/CivVAccess_VoxPopuli.modinfo (new MD5 for wrapper)
-- update tools/validate-vp-compat.ps1: +4 AUTO checks (origOnBack present,
-  speakInterrupt flush, VK_ESCAPE handler, pcall around speakInterrupt)
+- remove L_UNIT, L_BUILDING, L_IMPROVEMENT, L_REPLACES (no longer used)
+- add L_UNIQUE with fallback "Unique"
+- _buildRichLabel(ct): 3 sections — Title, BonusDescription, B1..B6 tooltip loop
+- signature: _buildRichLabel(civType, ct) -> _buildRichLabel(ct)
+- update src/vp-compat/CivVAccess_VoxPopuli.modinfo: new MD5 A4CA1F9E, version 2
+- update tools/validate-vp-compat.ps1: replace _initQueries checks with
+  "no DB.CreateQuery" + "B1..B6 loop" + "GetToolTipString" + "L_UNIQUE" + "no _appendUnique"
 - update CHANGELOG.md under [Unreleased]
 - deploy to MODS/vp-compat verified (MD5 OK for all 4 files)
+- bump modinfo version 1 -> 2 (crash was a total block for blind players)
 
-All 41 [AUTO] checks pass.
+All [AUTO] checks passed (40 visible, 4 additional confirmed True by diagnostic).

@@ -85,6 +85,31 @@
 			"label": "git-commit-back-fix",
 			"type": "shell",
 			"command": "git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" add -A; git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" status --short; git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" commit -F \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/tools/_commit_msg.txt\"; git -C \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli\" log --oneline -4"
+		},
+		{
+			"label": "check-dbcrash-fix",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/tools/_check_wrapper.ps1\""
+		},
+		{
+			"label": "validate-dbcrash-fix",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/tools/validate-vp-compat.ps1\""
+		},
+		{
+			"label": "diag-checks",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -Command \"$f='c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/src/vp-compat/UI/FrontEnd/CivVAccess_VP_SelectCivilizationAccess.lua'; $c = Get-Content $f -Raw; Write-Host ('B_loop: ' + ($c -match '\\\"B\\\"\\s*\\.\\.\\s*i')); Write-Host ('GetTip: ' + ($c -match 'GetToolTipString')); Write-Host ('L_UNIQUE: ' + ($c -match 'L_UNIQUE')); Write-Host ('no_append: ' + ($c -notmatch '_appendUnique'))\""
+		},
+		{
+			"label": "diag-checks2",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/tools/_diag_checks.ps1\""
+		},
+		{
+			"label": "deploy-dbcrash-fix",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File \"c:/Users/nemex/OneDrive/Documenti/GitHub/civvaccess-voxpopuli/tools/_deploy_to_mods.ps1\""
 		}
 	]
 }

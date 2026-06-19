@@ -10,6 +10,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- `CivVAccess_VP_SelectCivilizationAccess.lua`: removed DB.CreateQuery prepared
+  statements to prevent native access violation (0xC0000005) on context destroy;
+  unique components now read from VP's already-rendered icon button tooltips (B1..B6),
+  with zero DB access in the FrontEnd context. (VP-SELECTCIV-DBCRASH-1)
 - `CivVAccess_VP_SelectCivilizationAccess.lua`: fixed crash on Back button press;
   speech queue is now flushed before the SelectCivilization context is destroyed.
   (VP-SELECTCIV-BACK-CRASH-1)

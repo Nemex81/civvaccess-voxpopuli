@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Mod id="b6f3bfdd-b0c5-4d20-b2bf-33d6a7ca9aad" version="1">
+<Mod id="b6f3bfdd-b0c5-4d20-b2bf-33d6a7ca9aad" version="2">
   <Properties>
     <Name>Civ V Access - Vox Populi (no-EUI) Compatibility</Name>
     <Teaser>Accessibility for blind players on the Vox Populi no-EUI main map.</Teaser>
@@ -25,7 +25,7 @@
     <File md5="26B4FC7FB84D256B8F4FE67F62BA9CC9" import="1">UI/InGame/WorldView.lua</File>
     <File md5="96A483805128FB6AAAC2F88CDE04809D" import="1">UI/FrontEnd/GameSetupScreen.lua</File>
     <File md5="5AFC69A895158557B8C05A8334D171B5" import="1">UI/FrontEnd/SelectCivilization.lua</File>
-    <File md5="5B1D24530EC44512771E66C96B0571AB" import="1">UI/FrontEnd/CivVAccess_VP_SelectCivilizationAccess.lua</File>
+    <File md5="A4CA1F9E5572EA5F6F80CF8F2F502F90" import="1">UI/FrontEnd/CivVAccess_VP_SelectCivilizationAccess.lua</File>
     <File md5="1F6A2E4893E27FA3A2394A0654216C60" import="1">UI/FrontEnd/CivVAccess_VP_GameSetupAccess.lua</File>
   </Files>
 </Mod>

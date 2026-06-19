@@ -295,21 +295,37 @@ if (-not $vpscNode) {
             Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing VPSelectCivAccess_Installed sentinel"
         }
 
-        # DB queries for unique units/buildings/improvements must be inside lazy
-        # functions (show-time only), never at the top level of the file.
-        # Presence of _initQueries (the lazy init helper) is the proxy check.
-        if ($vpscContent -match '_initQueries') {
-            Pass "CivVAccess_VP_SelectCivilizationAccess.lua uses lazy DB query init (_initQueries)"
+        # DB.CreateQuery must be absent: FrontEnd context cannot safely hold
+        # sqlite3_stmt* userdata across context destroy (native crash 0xC0000005).
+        if ($vpscContent -notmatch 'DB\.CreateQuery') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua contains no DB.CreateQuery (VP-SELECTCIV-DBCRASH-1)"
         } else {
-            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing _initQueries (DB queries may run at include-time)"
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua still contains DB.CreateQuery — native crash risk (VP-SELECTCIV-DBCRASH-1)"
         }
 
-        # Each lazy query section must be pcall-protected. Check that at least
-        # one pcall wraps the lazy init call.
-        if ($vpscContent -match 'pcall\s*\(function\(\)[\s\S]*?_initQueries') {
-            Pass "CivVAccess_VP_SelectCivilizationAccess.lua has at least one pcall-wrapped lazy query"
+        # B1..B6 tooltip loop must be present (replaces DB queries for unique components).
+        if ($vpscContent -match '"B"\s*\.\.\s*i') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua reads unique components from B1..B6 button tooltips"
         } else {
-            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing pcall-protected query (VP-SELECTCIV-RICHLABEL-1)"
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing B1..B6 tooltip loop (VP-SELECTCIV-DBCRASH-1)"
+        }
+
+        if ($vpscContent -match 'GetToolTipString') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua uses GetToolTipString for unique components"
+        } else {
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing GetToolTipString call"
+        }
+
+        if ($vpscContent -match 'L_UNIQUE') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua defines L_UNIQUE label prefix"
+        } else {
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua missing L_UNIQUE label prefix"
+        }
+
+        if ($vpscContent -notmatch '_appendUnique') {
+            Pass "CivVAccess_VP_SelectCivilizationAccess.lua contains no _appendUnique (DB helper removed)"
+        } else {
+            Fail "CivVAccess_VP_SelectCivilizationAccess.lua still contains _appendUnique — DB dependency not fully removed"
         }
 
         # Fallback English string for TXT_KEY_CIVVACCESS_UNIQUE_ABILITY must be

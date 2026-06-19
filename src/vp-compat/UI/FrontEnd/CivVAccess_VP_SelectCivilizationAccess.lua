@@ -47,75 +47,13 @@ local function _safeKey(key, fallback)
     return (ok and v and v ~= key) and v or fallback
 end
 
-local L_ABILITY     = _safeKey("TXT_KEY_CIVVACCESS_UNIQUE_ABILITY",     "Unique ability")
-local L_UNIT        = _safeKey("TXT_KEY_CIVVACCESS_UNIQUE_UNIT",        "Unique unit")
-local L_BUILDING    = _safeKey("TXT_KEY_CIVVACCESS_UNIQUE_BUILDING",    "Unique building")
-local L_IMPROVEMENT = _safeKey("TXT_KEY_CIVVACCESS_UNIQUE_IMPROVEMENT", "Unique improvement")
-local L_REPLACES    = _safeKey("TXT_KEY_CIVVACCESS_REPLACES",           "replaces")
-
--- ---------------------------------------------------------------------------
--- Lazy DB query initialisation.  DB.CreateQuery is deferred to first use
--- inside AddCivilizationEntry (show-time), so include-time is truly DB-free.
--- ---------------------------------------------------------------------------
-local _unitsQ, _buildingsQ, _improvementsQ
-
-local function _initQueries()
-    if _unitsQ and _buildingsQ and _improvementsQ then return end
-    _unitsQ = DB.CreateQuery([[
-        SELECT UniqueUnit.Description AS UniqueDesc,
-               DefaultUnit.Description AS ReplacesDesc
-        FROM   Civilization_UnitClassOverrides
-               INNER JOIN Units AS UniqueUnit
-                   ON UniqueUnit.Type = Civilization_UnitClassOverrides.UnitType
-               INNER JOIN UnitClasses
-                   ON UnitClasses.Type = Civilization_UnitClassOverrides.UnitClassType
-               LEFT JOIN Units AS DefaultUnit
-                   ON DefaultUnit.Type = UnitClasses.DefaultUnit
-        WHERE  Civilization_UnitClassOverrides.CivilizationType = ?
-               AND Civilization_UnitClassOverrides.UnitType IS NOT NULL]])
-    _buildingsQ = DB.CreateQuery([[
-        SELECT UniqueBuilding.Description AS UniqueDesc,
-               DefaultBuilding.Description AS ReplacesDesc
-        FROM   Civilization_BuildingClassOverrides
-               INNER JOIN Buildings AS UniqueBuilding
-                   ON UniqueBuilding.Type = Civilization_BuildingClassOverrides.BuildingType
-               INNER JOIN BuildingClasses
-                   ON BuildingClasses.Type = Civilization_BuildingClassOverrides.BuildingClassType
-               LEFT JOIN Buildings AS DefaultBuilding
-                   ON DefaultBuilding.Type = BuildingClasses.DefaultBuilding
-        WHERE  Civilization_BuildingClassOverrides.CivilizationType = ?
-               AND Civilization_BuildingClassOverrides.BuildingType IS NOT NULL]])
-    _improvementsQ = DB.CreateQuery([[
-        SELECT Description FROM Improvements WHERE CivilizationType = ?]])
-end
-
--- Converts a TXT_KEY description string to a localized name, guarding NULL
--- and unresolved keys.  Returns "" when the value is not usable.
-local function _loc(descKey)
-    if not descKey then return "" end
-    local ok, v = pcall(Locale.ConvertTextKey, descKey)
-    if not ok or not v or v == descKey then return "" end
-    return v
-end
-
--- Appends "Label: name (replaces X)" to parts, handling nil ReplacesDesc.
-local function _appendUnique(parts, label, uniqueDesc, replacesDesc)
-    local name = _loc(uniqueDesc)
-    if name == "" then return end
-    local value = name
-    if replacesDesc then
-        local rep = _loc(replacesDesc)
-        if rep ~= "" and rep ~= name then
-            value = value .. " (" .. L_REPLACES .. " " .. rep .. ")"
-        end
-    end
-    parts[#parts + 1] = label .. ": " .. value
-end
+local L_ABILITY = _safeKey("TXT_KEY_CIVVACCESS_UNIQUE_ABILITY",   "Unique ability")
+local L_UNIQUE  = _safeKey("TXT_KEY_CIVVACCESS_UNIQUE_COMPONENT", "Unique")
 
 -- Builds the full rich spoken label for a regular (non-random) civ entry.
--- Called inside AddCivilizationEntry at show-time; every DB access is
--- individually guarded by pcall so partial failure never silences the rest.
-local function _buildRichLabel(civType, ct)
+-- Called inside AddCivilizationEntry at show-time. Reads only from
+-- already-rendered VP controls — no DB access, no prepared statements.
+local function _buildRichLabel(ct)
     local parts = {}
 
     -- 1. Base title: "Leader (Civ) (TraitShort)" — already rendered by VP.
@@ -135,40 +73,21 @@ local function _buildRichLabel(civType, ct)
         Log.warn("[vp-compat] SelectCiv: BonusDescription:GetText() failed: " .. tostring(bonus))
     end
 
-    -- 3. Unique units — lazy query, pcall-protected.
+    -- 3. Unique components — read tooltip from VP's already-rendered icon buttons.
+    --    No DB query: VP has already populated B1..B6 before returning controlTable.
     local ok3, err3 = pcall(function()
-        _initQueries()
-        for row in _unitsQ(civType) do
-            _appendUnique(parts, L_UNIT, row.UniqueDesc, row.ReplacesDesc)
-        end
-    end)
-    if not ok3 then
-        Log.warn("[vp-compat] SelectCiv: unique units query failed: " .. tostring(err3))
-    end
-
-    -- 4. Unique buildings — lazy query, pcall-protected.
-    local ok4, err4 = pcall(function()
-        _initQueries()
-        for row in _buildingsQ(civType) do
-            _appendUnique(parts, L_BUILDING, row.UniqueDesc, row.ReplacesDesc)
-        end
-    end)
-    if not ok4 then
-        Log.warn("[vp-compat] SelectCiv: unique buildings query failed: " .. tostring(err4))
-    end
-
-    -- 5. Unique improvements — lazy query, pcall-protected.
-    local ok5, err5 = pcall(function()
-        _initQueries()
-        for row in _improvementsQ(civType) do
-            local name = _loc(row.Description)
-            if name ~= "" then
-                parts[#parts + 1] = L_IMPROVEMENT .. ": " .. name
+        for i = 1, 6 do
+            local btn = ct["B" .. i]
+            if btn and not btn:IsHidden() then
+                local tip = btn:GetToolTipString()
+                if tip and tip ~= "" then
+                    parts[#parts + 1] = L_UNIQUE .. ": " .. tip
+                end
             end
         end
     end)
-    if not ok5 then
-        Log.warn("[vp-compat] SelectCiv: unique improvements query failed: " .. tostring(err5))
+    if not ok3 then
+        Log.warn("[vp-compat] SelectCiv: unique buttons read failed: " .. tostring(err3))
     end
 
     return table.concat(parts, ", ")
@@ -200,7 +119,7 @@ end
 AddCivilizationEntry = function(traitsQuery, populateUniqueBonuses, civ, leaderType, leaderDescription, leaderPortraitIndex, leaderIconAtlas, scenarioCivID)
     local ct = origAddEntry(traitsQuery, populateUniqueBonuses, civ, leaderType, leaderDescription, leaderPortraitIndex, leaderIconAtlas, scenarioCivID)
     if ct then
-        local richLabel = _buildRichLabel(civ.Type, ct)
+        local richLabel = _buildRichLabel(ct)
         local title = ""
         local ok, v = pcall(function() return ct.Title:GetText() end)
         if ok and v and v ~= "" then title = v end
