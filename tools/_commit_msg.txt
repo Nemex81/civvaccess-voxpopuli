@@ -1,26 +1,20 @@
-fix: remove DB.CreateQuery to prevent native crash on context destroy (VP-SELECTCIV-DBCRASH-1)
+feat: add ModsMenu VP-compat wrapper with hard guard (VP-MODSMENU-GUARD-1)
 
-DB.CreateQuery creates sqlite3_stmt* C++ objects as Lua userdata with native
-finalizers. When UIManager:DequeuePopup + ContextPtr:SetHide destroy the
-SelectCivilization Lua context, the engine can invalidate the DB handle before
-the Lua GC calls those finalizers, causing an access violation (0xC0000005) in
-CvGameDatabaseWin32FinalRelease.dll. No Lua pcall can intercept this.
+VP_LUAAPI can reload in an inconsistent state when VPUI_loader.lua fails,
+leaving SpeechPipeline/Log objects invalid. CVA's CivVAccess_ModsMenuAccess
+has no guard, so BaseMenu.install crashes natively on ModsMenu open.
 
-Fix: remove all three prepared statements (_unitsQ, _buildingsQ, _improvementsQ),
-_initQueries(), _appendUnique(), and the three DB-dependent sections (3/4/5) of
-_buildRichLabel. Replace with a zero-DB approach: after VP's AddCivilizationEntry
-returns, read tooltip text from the B1..B6 icon buttons VP already rendered
-(ct["B" .. i]:GetToolTipString()). All DB access is gone from the FrontEnd context.
+Add CivVAccess_VP_ModsMenuAccess.lua: hard guard (BaseMenu/BaseMenuItems/
+SpeechPipeline/Log nil-check) + same 3 items as CVA original (SinglePlayer,
+MultiPlayer, Back) + installed sentinel.
 
-- remove L_UNIT, L_BUILDING, L_IMPROVEMENT, L_REPLACES (no longer used)
-- add L_UNIQUE with fallback "Unique"
-- _buildRichLabel(ct): 3 sections — Title, BonusDescription, B1..B6 tooltip loop
-- signature: _buildRichLabel(civType, ct) -> _buildRichLabel(ct)
-- update src/vp-compat/CivVAccess_VoxPopuli.modinfo: new MD5 A4CA1F9E, version 2
-- update tools/validate-vp-compat.ps1: replace _initQueries checks with
-  "no DB.CreateQuery" + "B1..B6 loop" + "GetToolTipString" + "L_UNIQUE" + "no _appendUnique"
-- update CHANGELOG.md under [Unreleased]
-- deploy to MODS/vp-compat verified (MD5 OK for all 4 files)
-- bump modinfo version 1 -> 2 (crash was a total block for blind players)
+Add ModsMenu.lua VP-compat override: verbatim base-game body + pcall
+bootstrap loading the VP-compat wrapper; never crashes the screen for
+sighted players.
 
-All [AUTO] checks passed (40 visible, 4 additional confirmed True by diagnostic).
+Pattern: YnAEMP-Access / YnAEMP_Access_Setup.lua.
+VP does not override ModsMenu; our import="1" wins over CVA's DLC file.
+Modinfo version bumped 2->3 (crash fix blocking blind players on ModsMenu).
+validate-vp-compat.ps1: added 10 AUTO checks for both new files.
+docs/analysis/milestone2-readiness.md: ModsMenu section added.
+README.md: ModsMenu listed under Supported Screens.
